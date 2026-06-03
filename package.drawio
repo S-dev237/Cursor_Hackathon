@@ -1,0 +1,118 @@
+<mxfile host="65bd71144e">
+    <diagram id="package-diagram" name="Architecture Packages">
+        <mxGraphModel dx="2486" dy="1734" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1400" pageHeight="1000" math="0" shadow="1">
+            <root>
+                <mxCell id="0"/>
+                <mxCell id="1" parent="0"/>
+                <mxCell id="pkg1" value="Gestion Documentaire" style="package;html=1;fontStyle=1;align=left;verticalAlign=top;spacingTop=25;spacing=5;fontSize=13;fontColor=#000000;fillColor=#E6F2FF;strokeColor=#0066CC;strokeWidth=2;" parent="1" vertex="1">
+                    <mxGeometry x="20" y="20" width="260" height="200" as="geometry"/>
+                </mxCell>
+                <mxCell id="pkg1-label" value="&lt;div&gt;&lt;br&gt;&lt;/div&gt;Document&lt;br&gt;Fichier&lt;br&gt;VersionDocument&lt;br&gt;Auteur&lt;br&gt;DocumentAuteur&lt;br&gt;MotCle&lt;br&gt;DocumentMotCle&lt;br&gt;Thematique&lt;br&gt;DocumentThematique" style="text;html=1;align=left;verticalAlign=top;fontSize=11;spacingTop=5;spacing=3;" parent="pkg1" vertex="1">
+                    <mxGeometry x="5" y="25" width="250" height="170" as="geometry"/>
+                </mxCell>
+                <mxCell id="pkg2" value="Contrôle d&#39;Accès" style="package;html=1;fontStyle=1;align=left;verticalAlign=top;spacingTop=25;spacing=5;fontSize=13;fontColor=#000000;fillColor=#E6FFE6;strokeColor=#00AA00;strokeWidth=2;" parent="1" vertex="1">
+                    <mxGeometry x="620" y="-250" width="260" height="200" as="geometry"/>
+                </mxCell>
+                <mxCell id="pkg2-label" value="&lt;div&gt;&lt;br&gt;&lt;/div&gt;Utilisateur&lt;br&gt;Role&lt;br&gt;Permission&lt;br&gt;UtilisateurRole&lt;br&gt;RolePermission&lt;br&gt;NiveauAcces&lt;br&gt;  (PUBLIC/CAMPUS/&lt;br&gt;   FACULTE/DEPT/PRIVE)&lt;br&gt;DocumentAcces" style="text;html=1;align=left;verticalAlign=top;fontSize=11;spacingTop=5;spacing=3;" parent="pkg2" vertex="1">
+                    <mxGeometry x="5" y="25" width="250" height="170" as="geometry"/>
+                </mxCell>
+                <mxCell id="pkg3" value="Organisation Académique" style="package;html=1;fontStyle=1;align=left;verticalAlign=top;spacingTop=25;spacing=5;fontSize=13;fontColor=#000000;fillColor=#FFF9E6;strokeColor=#CC9900;strokeWidth=2;" parent="1" vertex="1">
+                    <mxGeometry x="720" y="10" width="260" height="200" as="geometry"/>
+                </mxCell>
+                <mxCell id="pkg3-label" value="&lt;div&gt;&lt;br&gt;&lt;/div&gt;Universite&lt;br&gt;Faculte&lt;br&gt;Departement&lt;br&gt;Laboratoire&lt;br&gt;Programme" style="text;html=1;align=left;verticalAlign=top;fontSize=11;spacingTop=5;spacing=3;" parent="pkg3" vertex="1">
+                    <mxGeometry x="5" y="25" width="250" height="170" as="geometry"/>
+                </mxCell>
+                <mxCell id="pkg4" value="Recherche et Indexation" style="package;html=1;fontStyle=1;align=left;verticalAlign=top;spacingTop=25;spacing=5;fontSize=13;fontColor=#000000;fillColor=#FFE6F0;strokeColor=#CC0066;strokeWidth=2;" parent="1" vertex="1">
+                    <mxGeometry x="80" y="-300" width="260" height="200" as="geometry"/>
+                </mxCell>
+                <mxCell id="pkg4-label" value="&lt;div&gt;&lt;br&gt;&lt;/div&gt;Indexation&lt;br&gt;IndexRecherche&lt;br&gt;RechercheUtilisateur&lt;br&gt;ResultatRecherche&lt;br&gt;Index ElasticSearch&lt;br&gt;(titre, resume,&lt;br&gt; auteurs, mots-cles,&lt;br&gt; thematiques, dept, annee)" style="text;html=1;align=left;verticalAlign=top;fontSize=11;spacingTop=5;spacing=3;" parent="pkg4" vertex="1">
+                    <mxGeometry x="5" y="25" width="250" height="170" as="geometry"/>
+                </mxCell>
+                <mxCell id="pkg5" value="IA - Extraction Métadonnées" style="package;html=1;fontStyle=1;align=left;verticalAlign=top;spacingTop=25;spacing=5;fontSize=13;fontColor=#000000;fillColor=#F0E6FF;strokeColor=#6600CC;strokeWidth=2;" parent="1" vertex="1">
+                    <mxGeometry x="-40" y="410" width="260" height="200" as="geometry"/>
+                </mxCell>
+                <mxCell id="pkg5-label" value="&lt;div&gt;&lt;br&gt;&lt;/div&gt;AnalyseIA&lt;br&gt;MetadataExtraite&lt;br&gt;SuggestionThematique&lt;br&gt;&lt;br&gt;Workflow:&lt;br&gt;PDF → Extraction&lt;br&gt;  → LLM&lt;br&gt;  → Métadonnées&lt;br&gt;  → Validation" style="text;html=1;align=left;verticalAlign=top;fontSize=11;spacingTop=5;spacing=3;" parent="pkg5" vertex="1">
+                    <mxGeometry x="5" y="25" width="250" height="170" as="geometry"/>
+                </mxCell>
+                <mxCell id="pkg6" value="RAG - Vectorisation" style="package;html=1;fontStyle=1;align=left;verticalAlign=top;spacingTop=25;spacing=5;fontSize=13;fontColor=#000000;fillColor=#E6F2FF;strokeColor=#0066CC;strokeWidth=2;" parent="1" vertex="1">
+                    <mxGeometry x="300" y="380" width="260" height="200" as="geometry"/>
+                </mxCell>
+                <mxCell id="pkg6-label" value="&lt;div&gt;&lt;br&gt;&lt;/div&gt;Chunk&lt;br&gt;  id_chunk, id_document,&lt;br&gt;  contenu, page_debut,&lt;br&gt;  page_fin, ordre&lt;br&gt;Embedding&lt;br&gt;  id_embedding, id_chunk,&lt;br&gt;  modele, vector_store_id&lt;br&gt;IndexationVectorielle&lt;br&gt;(pgvector/Qdrant/Weaviate)" style="text;html=1;align=left;verticalAlign=top;fontSize=10;spacingTop=5;spacing=2;" parent="pkg6" vertex="1">
+                    <mxGeometry x="5" y="25" width="250" height="170" as="geometry"/>
+                </mxCell>
+                <mxCell id="pkg7" value="Stockage - Distribution" style="package;html=1;fontStyle=1;align=left;verticalAlign=top;spacingTop=25;spacing=5;fontSize=13;fontColor=#000000;fillColor=#FFE6E6;strokeColor=#CC0000;strokeWidth=2;" parent="1" vertex="1">
+                    <mxGeometry x="680" y="250" width="260" height="200" as="geometry"/>
+                </mxCell>
+                <mxCell id="pkg7-label" value="&lt;div&gt;&lt;br&gt;&lt;/div&gt;StorageNode&lt;br&gt;  (LOCAL/WEB/EDGE)&lt;br&gt;  id_node, nom, type,&lt;br&gt;  adresse, statut&lt;br&gt;StorageLocation&lt;br&gt;  id_location, id_fichier,&lt;br&gt;  id_node, path, checksum&lt;br&gt;StorageReplica&lt;br&gt;  id_replica, id_fichier,&lt;br&gt;  id_node, priorite" style="text;html=1;align=left;verticalAlign=top;fontSize=10;spacingTop=5;spacing=2;" parent="pkg7" vertex="1">
+                    <mxGeometry x="5" y="25" width="250" height="170" as="geometry"/>
+                </mxCell>
+                <mxCell id="pkg8" value="Réseau Campus - P2P" style="package;html=1;fontStyle=1;align=left;verticalAlign=top;spacingTop=25;spacing=5;fontSize=13;fontColor=#000000;fillColor=#E6FFE6;strokeColor=#00AA00;strokeWidth=2;" parent="1" vertex="1">
+                    <mxGeometry x="950" y="420" width="260" height="200" as="geometry"/>
+                </mxCell>
+                <mxCell id="pkg8-label" value="&lt;div&gt;&lt;br&gt;&lt;/div&gt;Peer&lt;br&gt;  id_peer, device_id,&lt;br&gt;  adresse_ip,&lt;br&gt;  derniere_connexion&lt;br&gt;PeerChunk&lt;br&gt;  id_peer, id_chunk&lt;br&gt;&lt;br&gt;Distribution BitTorrent&lt;br&gt;universitaire local" style="text;html=1;align=left;verticalAlign=top;fontSize=11;spacingTop=5;spacing=3;" parent="pkg8" vertex="1">
+                    <mxGeometry x="5" y="25" width="250" height="170" as="geometry"/>
+                </mxCell>
+                <mxCell id="pkg9" value="Statistiques" style="package;html=1;fontStyle=1;align=left;verticalAlign=top;spacingTop=25;spacing=5;fontSize=13;fontColor=#000000;fillColor=#FFF9E6;strokeColor=#CC9900;strokeWidth=2;" parent="1" vertex="1">
+                    <mxGeometry x="-470" y="150" width="260" height="140" as="geometry"/>
+                </mxCell>
+                <mxCell id="pkg9-label" value="&lt;div&gt;&lt;br&gt;&lt;/div&gt;Consultation&lt;br&gt;Telechargement&lt;br&gt;Favori&lt;br&gt;StatDocument&lt;br&gt;StatAuteur" style="text;html=1;align=left;verticalAlign=top;fontSize=11;spacingTop=5;spacing=3;" parent="pkg9" vertex="1">
+                    <mxGeometry x="5" y="25" width="250" height="110" as="geometry"/>
+                </mxCell>
+                <mxCell id="dep1" value="" style="endArrow=open;dashed=1;dashPattern=3 3;endSize=20;strokeWidth=2;strokeColor=#666666;" parent="1" source="pkg1" target="pkg3" edge="1">
+                    <mxGeometry relative="1" as="geometry">
+                        <mxPoint x="150" y="230" as="sourcePoint"/>
+                        <mxPoint x="700" y="230" as="targetPoint"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="dep2" value="" style="endArrow=open;dashed=1;dashPattern=3 3;endSize=20;strokeWidth=2;strokeColor=#666666;" parent="1" source="pkg1" target="pkg2" edge="1">
+                    <mxGeometry relative="1" as="geometry">
+                        <mxPoint x="280" y="100" as="sourcePoint"/>
+                        <mxPoint x="320" y="100" as="targetPoint"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="dep3" value="" style="endArrow=open;dashed=1;dashPattern=3 3;endSize=20;strokeWidth=2;strokeColor=#666666;" parent="1" source="pkg4" target="pkg1" edge="1">
+                    <mxGeometry relative="1" as="geometry">
+                        <mxPoint x="900" y="120" as="sourcePoint"/>
+                        <mxPoint x="300" y="120" as="targetPoint"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="dep4" value="" style="endArrow=open;dashed=1;dashPattern=3 3;endSize=20;strokeWidth=2;strokeColor=#666666;" parent="1" source="pkg5" target="pkg1" edge="1">
+                    <mxGeometry relative="1" as="geometry">
+                        <mxPoint x="150" y="250" as="sourcePoint"/>
+                        <mxPoint x="150" y="220" as="targetPoint"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="dep5" value="" style="endArrow=open;dashed=1;dashPattern=3 3;endSize=20;strokeWidth=2;strokeColor=#666666;" parent="1" source="pkg6" target="pkg1" edge="1">
+                    <mxGeometry relative="1" as="geometry">
+                        <mxPoint x="350" y="250" as="sourcePoint"/>
+                        <mxPoint x="200" y="220" as="targetPoint"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="dep6" value="" style="endArrow=open;dashed=1;dashPattern=3 3;endSize=20;strokeWidth=2;strokeColor=#666666;" parent="1" source="pkg7" target="pkg1" edge="1">
+                    <mxGeometry relative="1" as="geometry">
+                        <mxPoint x="650" y="250" as="sourcePoint"/>
+                        <mxPoint x="250" y="220" as="targetPoint"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="dep7" value="" style="endArrow=open;dashed=1;dashPattern=3 3;endSize=20;strokeWidth=2;strokeColor=#666666;" parent="1" source="pkg8" target="pkg6" edge="1">
+                    <mxGeometry relative="1" as="geometry">
+                        <mxPoint x="920" y="340" as="sourcePoint"/>
+                        <mxPoint x="580" y="340" as="targetPoint"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="dep8" value="" style="endArrow=open;dashed=1;dashPattern=3 3;endSize=20;strokeWidth=2;strokeColor=#666666;" parent="1" source="pkg9" target="pkg1" edge="1">
+                    <mxGeometry relative="1" as="geometry">
+                        <mxPoint x="350" y="480" as="sourcePoint"/>
+                        <mxPoint x="150" y="220" as="targetPoint"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="title" value="Architecture UML - Système de Gestion Documentaire Universitaire" style="text;html=1;align=center;verticalAlign=middle;fontSize=16;fontStyle=1;fontColor=#333333;" parent="1" vertex="1">
+                    <mxGeometry y="650" width="1200" height="30" as="geometry"/>
+                </mxCell>
+                <mxCell id="legend" value="Légende: Les flèches en pointillés indiquent les dépendances entre packages" style="text;html=1;align=center;verticalAlign=middle;fontSize=12;fontColor=#666666;" parent="1" vertex="1">
+                    <mxGeometry y="690" width="1200" height="25" as="geometry"/>
+                </mxCell>
+            </root>
+        </mxGraphModel>
+    </diagram>
+</mxfile>
