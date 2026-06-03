@@ -18,8 +18,9 @@ class Settings(BaseSettings):
     minio_bucket: str = "documents"
     minio_secure: bool = False
 
-    # LanceDB
-    lancedb_uri: str = "./data/lancedb"
+    # Qdrant
+    qdrant_url: str = "http://localhost:6333"
+    qdrant_api_key: str = ""
 
     # OpenAI
     openai_api_key: str = ""
@@ -34,6 +35,11 @@ class Settings(BaseSettings):
     debug: bool = False
     app_name: str = "Gestion Documents Académiques"
     app_version: str = "1.0.0"
+
+    # Admin interface
+    admin_username: str = "admin"
+    admin_password: str = "admin"
+    admin_secret_key: str = "change_me_admin_secret_key"
 
     class Config:
         env_file = ".env"

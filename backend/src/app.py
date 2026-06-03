@@ -1,8 +1,10 @@
 from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from starlette.middleware.sessions import SessionMiddleware
+from sqladmin import Admin
 from src.shared.infrastructure.settings import get_settings
-from src.shared.infrastructure.database import create_db_and_tables
+from src.shared.infrastructure.database import create_db_and_tables, engine
 from src.shared.infrastructure.event_bus import get_event_bus
 
 # Importation des modèles SQLModel (nécessaire pour la création des tables)
@@ -27,6 +29,10 @@ from src.modules.classification.infrastructure.listeners.ressource_cree_listener
 )
 from src.modules.classification.infrastructure.adapters.prolog_adapter import PrologAdapter
 from src.modules.document.domain.events.ressource_cree import RessourceCreeEvent, FichierAjouteEvent
+
+# Admin
+from src.admin.auth import AdminAuthBackend
+from src.admin.views import ALL_VIEWS
 
 settings = get_settings()
 
@@ -59,6 +65,15 @@ def create_app() -> FastAPI:
         lifespan=lifespan,
     )
 
+    # SessionMiddleware requis par sqladmin pour l'authentification
+    app.add_middleware(
+        SessionMiddleware,
+        secret_key=settings.admin_secret_key,
+        session_cookie="acadoc_admin_session",
+        max_age=3600 * 8,  # 8h
+        https_only=False,
+    )
+
     app.add_middleware(
         CORSMiddleware,
         allow_origins=["*"],
@@ -67,7 +82,21 @@ def create_app() -> FastAPI:
         allow_headers=["*"],
     )
 
-    # ── Enregistrement des routes ───────────────────────────────────────
+    # ── Interface Admin ─────────────────────────────────────────────────
+    authentication_backend = AdminAuthBackend(secret_key=settings.admin_secret_key)
+    admin = Admin(
+        app=app,
+        engine=engine,
+        authentication_backend=authentication_backend,
+        title="📚 AcaDoc Admin",
+        base_url="/admin",
+        logo_url="https://fastapi.tiangolo.com/img/favicon.png",
+        templates_dir=None,
+    )
+    for view in ALL_VIEWS:
+        admin.add_view(view)
+
+    # ── Enregistrement des routes API ───────────────────────────────────
     app.include_router(iam_router,            prefix="/api/v1")
     app.include_router(academique_router,     prefix="/api/v1")
     app.include_router(document_router,       prefix="/api/v1")
@@ -77,7 +106,12 @@ def create_app() -> FastAPI:
 
     @app.get("/", tags=["Santé"])
     async def sante():
-        return {"status": "ok", "version": settings.app_version}
+        return {
+            "status": "ok",
+            "version": settings.app_version,
+            "admin": "/admin",
+            "docs": "/docs",
+        }
 
     @app.get("/health", tags=["Santé"])
     async def health():

@@ -1,0 +1,26 @@
+# Python
+backend/.venv/
+**/__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+*.egg-info/
+dist/
+build/
+
+# Env & secrets
+.env
+backend/.env
+
+# LanceDB / données locales
+backend/data/
+*.lancedb
+
+# IDE
+.idea/
+.vscode/
+*.swp
+
+# OS
+.DS_Store
+Thumbs.db

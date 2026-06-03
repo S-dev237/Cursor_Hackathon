@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends
 from sqlalchemy.ext.asyncio import AsyncSession
 from src.shared.infrastructure.database import get_async_session
 from src.modules.iam.infrastructure.http.dependencies import get_current_user
-from ..adapters.lancedb_adapter import LanceDBAdapter
+from ..adapters.qdrant_adapter import QdrantAdapter
 from ..adapters.openai_embedding_adapter import OpenAIEmbeddingAdapter
 from ..adapters.openai_llm_adapter import OpenAILLMAdapter
 from ..persistence.repository import SQLModelChunkRepository
@@ -17,7 +17,7 @@ router = APIRouter(prefix="/rag", tags=["RAG"])
 def get_rag_deps(session: AsyncSession = Depends(get_async_session)):
     return {
         "embedding": OpenAIEmbeddingAdapter(),
-        "vecteur_store": LanceDBAdapter(),
+        "vecteur_store": QdrantAdapter(),
         "llm": OpenAILLMAdapter(),
         "chunk_repo": SQLModelChunkRepository(session),
         "chunker": ChunkingService(),

@@ -6,7 +6,7 @@ avant de passer le texte brut à IndexerRessourceUseCase.
 """
 import io
 from src.modules.document.domain.events.ressource_cree import FichierAjouteEvent
-from ..adapters.lancedb_adapter import LanceDBAdapter
+from ..adapters.qdrant_adapter import QdrantAdapter
 from ..adapters.openai_embedding_adapter import OpenAIEmbeddingAdapter
 from ...domain.services.chunking_service import ChunkingService
 
@@ -43,7 +43,7 @@ class FichierAjouteRAGListener:
                 uc = IndexerRessourceUseCase(
                     chunker=ChunkingService(),
                     embedding=OpenAIEmbeddingAdapter(),
-                    vecteur_store=LanceDBAdapter(),
+                    vecteur_store=QdrantAdapter(),
                     chunk_repo=SQLModelChunkRepository(session),
                 )
                 await uc.execute(IndexerRessourceCommand(
