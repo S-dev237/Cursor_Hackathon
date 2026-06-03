@@ -1,10 +1,25 @@
 import api from './axios.js'
+import {
+  isMockMode,
+  mockSearchDocuments,
+  mockGetDocument,
+  mockGetMyDocuments,
+  mockSubmitDocument,
+  mockUpdateDocument,
+  mockGetDownloadUrl,
+  mockGetCitation,
+  mockGetStats,
+  mockGetDomains,
+  mockGetInstitutions,
+  mockGetAdminQueue,
+  mockReviewDocument,
+  mockRegisterView,
+} from '../mocks/mockApi.js'
 
 function toError(err) {
   return err.response?.data?.detail || 'Erreur réseau'
 }
 
-// Sérialise les params : ignore les valeurs vides, répète les clés pour les tableaux
 function serializeParams(params) {
   const usp = new URLSearchParams()
   Object.entries(params).forEach(([key, value]) => {
@@ -18,8 +33,8 @@ function serializeParams(params) {
   return usp.toString()
 }
 
-// GET /search avec filtres → { documents, total, page, per_page }
 export async function searchDocuments(params = {}) {
+  if (isMockMode()) return mockSearchDocuments(params)
   try {
     const { data } = await api.get('/search', {
       params,
@@ -32,6 +47,7 @@ export async function searchDocuments(params = {}) {
 }
 
 export async function getDocument(id) {
+  if (isMockMode()) return mockGetDocument(id)
   try {
     const { data } = await api.get(`/documents/${id}`)
     return { data, error: null }
@@ -40,8 +56,8 @@ export async function getDocument(id) {
   }
 }
 
-// Soumissions de l'utilisateur connecté
 export async function getMyDocuments() {
+  if (isMockMode()) return mockGetMyDocuments()
   try {
     const { data } = await api.get('/documents/my')
     return { data, error: null }
@@ -50,8 +66,8 @@ export async function getMyDocuments() {
   }
 }
 
-// Upload multipart : file + metadata JSON
 export async function submitDocument(file, metadata = {}) {
+  if (isMockMode()) return mockSubmitDocument(file, metadata)
   try {
     const form = new FormData()
     form.append('file', file)
@@ -68,6 +84,7 @@ export async function submitDocument(file, metadata = {}) {
 }
 
 export async function updateDocument(id, payload) {
+  if (isMockMode()) return mockUpdateDocument(id, payload)
   try {
     const { data } = await api.put(`/documents/${id}`, payload)
     return { data, error: null }
@@ -76,17 +93,22 @@ export async function updateDocument(id, payload) {
   }
 }
 
-// Fire & forget — pas de gestion d'erreur attendue
 export function registerView(id) {
+  if (isMockMode()) {
+    mockRegisterView(id)
+    return
+  }
   api.post(`/documents/${id}/view`).catch(() => {})
 }
 
 export function getDownloadUrl(id) {
+  if (isMockMode()) return mockGetDownloadUrl(id)
   const base = import.meta.env.VITE_API_URL || 'http://localhost:8000'
   return `${base}/documents/${id}/download`
 }
 
 export async function getCitation(id, format = 'bibtex') {
+  if (isMockMode()) return mockGetCitation(id, format)
   try {
     const { data } = await api.get(`/documents/${id}/citation`, {
       params: { format },
@@ -98,6 +120,7 @@ export async function getCitation(id, format = 'bibtex') {
 }
 
 export async function getStats() {
+  if (isMockMode()) return mockGetStats()
   try {
     const { data } = await api.get('/stats')
     return { data, error: null }
@@ -107,6 +130,7 @@ export async function getStats() {
 }
 
 export async function getDomains() {
+  if (isMockMode()) return mockGetDomains()
   try {
     const { data } = await api.get('/domains')
     return { data, error: null }
@@ -116,6 +140,7 @@ export async function getDomains() {
 }
 
 export async function getInstitutions() {
+  if (isMockMode()) return mockGetInstitutions()
   try {
     const { data } = await api.get('/institutions')
     return { data, error: null }
@@ -124,8 +149,8 @@ export async function getInstitutions() {
   }
 }
 
-// ADMIN
 export async function getAdminQueue(params = {}) {
+  if (isMockMode()) return mockGetAdminQueue(params)
   try {
     const { data } = await api.get('/admin/queue', { params })
     return { data, error: null }
@@ -135,6 +160,7 @@ export async function getAdminQueue(params = {}) {
 }
 
 export async function reviewDocument(id, payload) {
+  if (isMockMode()) return mockReviewDocument(id, payload)
   try {
     const { data } = await api.patch(`/admin/documents/${id}/review`, payload)
     return { data, error: null }

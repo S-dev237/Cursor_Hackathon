@@ -1,0 +1,283 @@
+/** Données initiales — alignées sur openscience_schema.sql (seed). */
+
+export const MOCK_DOMAINS = [
+  { id: 'dom-1', name: 'Informatique', slug: 'informatique' },
+  { id: 'dom-2', name: 'Mathématiques', slug: 'mathematiques' },
+  { id: 'dom-3', name: 'Génie Civil', slug: 'genie-civil' },
+  { id: 'dom-4', name: 'Sciences Biologiques', slug: 'sciences-biologiques' },
+  { id: 'dom-5', name: 'Économie et Gestion', slug: 'economie-gestion' },
+  { id: 'dom-6', name: 'Droit', slug: 'droit' },
+  { id: 'dom-7', name: 'Médecine', slug: 'medecine' },
+  { id: 'dom-8', name: 'Physique', slug: 'physique' },
+]
+
+export const MOCK_INSTITUTIONS = [
+  { id: 'ins-1', name: 'École Nationale Supérieure Polytechnique de Yaoundé', acronym: 'ENSPY', city: 'Yaoundé' },
+  { id: 'ins-2', name: 'Université de Yaoundé I', acronym: 'UYI', city: 'Yaoundé' },
+  { id: 'ins-3', name: 'Université de Yaoundé II', acronym: 'UYII', city: 'Soa' },
+  { id: 'ins-4', name: 'Université de Douala', acronym: 'UD', city: 'Douala' },
+  { id: 'ins-5', name: 'Université de Dschang', acronym: 'UDs', city: 'Dschang' },
+]
+
+export const MOCK_USERS = {
+  'admin@openscience.cm': {
+    id: 'usr-admin',
+    email: 'admin@openscience.cm',
+    full_name: 'Administrateur OpenScience',
+    role: 'admin',
+    institution_id: 'ins-1',
+  },
+  'demo@etudiant.cm': {
+    id: 'usr-demo',
+    email: 'demo@etudiant.cm',
+    full_name: 'Marie Kouassi',
+    role: 'student',
+    institution_id: 'ins-2',
+  },
+}
+
+/** PDF public pour le lecteur (pas de backend requis). */
+export const MOCK_SAMPLE_PDF_URL =
+  'https://mozilla.github.io/pdf.js/web/compressed.tracemonkey-pldi-09.pdf'
+
+function doc(overrides) {
+  const domain = MOCK_DOMAINS.find((d) => d.id === overrides.domain_id)
+  const institution = MOCK_INSTITUTIONS.find((i) => i.id === overrides.institution_id)
+  return {
+    view_count: 12,
+    download_count: 4,
+    file_size_kb: 2048,
+    page_count: 48,
+    ai_extracted: false,
+    ai_confidence: 0,
+    created_at: '2026-05-15T10:00:00Z',
+    ...overrides,
+    domain_name: domain?.name || '',
+    institution_name: institution?.name || '',
+  }
+}
+
+export const INITIAL_DOCUMENTS = [
+  doc({
+    id: 'doc-1',
+    title: 'Deep Learning appliqué à la télédétection agricole au Cameroun',
+    abstract:
+      'Cette thèse explore l\'application des réseaux de neurones convolutifs pour la classification des cultures à partir d\'images satellite Sentinel-2.',
+    doc_type: 'thesis',
+    status: 'approved',
+    authors: ['Jean-Baptiste Nkomo', 'Dr. Aïcha Mendy'],
+    keywords: ['machine learning', 'télédétection', 'agriculture'],
+    publication_year: 2025,
+    domain_id: 'dom-1',
+    institution_id: 'ins-1',
+    ai_extracted: true,
+    ai_confidence: 0.91,
+    view_count: 342,
+    download_count: 89,
+    page_count: 156,
+    created_at: '2026-05-20T14:00:00Z',
+  }),
+  doc({
+    id: 'doc-2',
+    title: 'Modélisation structurelle des ponts en zone sismique',
+    abstract:
+      'Analyse numérique des structures de ponts soumises à des sollicitations sismiques en contexte tropical.',
+    doc_type: 'memoir',
+    status: 'approved',
+    authors: ['Fatou Diallo'],
+    keywords: ['génie civil', 'sismique', 'simulation'],
+    publication_year: 2024,
+    domain_id: 'dom-3',
+    institution_id: 'ins-4',
+    view_count: 128,
+    download_count: 31,
+    created_at: '2026-04-10T09:00:00Z',
+  }),
+  doc({
+    id: 'doc-3',
+    title: 'Épidémiologie des maladies tropicales négligées en Afrique centrale',
+    abstract:
+      'Revue systématique et analyse spatiale des données épidémiologiques sur les MTN dans la région CEMAC.',
+    doc_type: 'article',
+    status: 'approved',
+    authors: ['Dr. Samuel Ewodo', 'Claire Nguefack'],
+    keywords: ['épidémiologie', 'santé publique', 'Afrique'],
+    publication_year: 2025,
+    domain_id: 'dom-7',
+    institution_id: 'ins-2',
+    ai_extracted: true,
+    ai_confidence: 0.87,
+    view_count: 567,
+    download_count: 142,
+    created_at: '2026-05-01T11:00:00Z',
+  }),
+  doc({
+    id: 'doc-4',
+    title: 'Impact de la microfinance sur l\'inclusion financière des PME',
+    abstract:
+      'Étude empirique sur l\'accès au crédit des petites entreprises dans les zones urbaines camerounaises.',
+    doc_type: 'memoir',
+    status: 'approved',
+    authors: ['Patrick Abega'],
+    keywords: ['microfinance', 'PME', 'économie'],
+    publication_year: 2023,
+    domain_id: 'dom-5',
+    institution_id: 'ins-3',
+    view_count: 89,
+    download_count: 22,
+    created_at: '2026-03-22T08:00:00Z',
+  }),
+  doc({
+    id: 'doc-5',
+    title: 'Optimisation énergétique des bâtiments tropicaux',
+    abstract:
+      'Proposition d\'un modèle de simulation thermique adapté aux climats équatoriaux humides.',
+    doc_type: 'report',
+    status: 'approved',
+    authors: ['Équipe Labo Énergie ENSPY'],
+    keywords: ['énergie', 'bâtiment', 'durabilité'],
+    publication_year: 2025,
+    domain_id: 'dom-3',
+    institution_id: 'ins-1',
+    view_count: 45,
+    download_count: 11,
+    created_at: '2026-05-18T16:00:00Z',
+  }),
+  doc({
+    id: 'doc-6',
+    title: 'Propriétés optiques des nanomatériaux bidimensionnels',
+    abstract:
+      'Caractérisation expérimentale et modélisation théorique des propriétés optiques de matériaux 2D.',
+    doc_type: 'thesis',
+    status: 'approved',
+    authors: ['Dr. Henri Mvondo'],
+    keywords: ['physique', 'nanomatériaux', 'optique'],
+    publication_year: 2024,
+    domain_id: 'dom-8',
+    institution_id: 'ins-5',
+    view_count: 201,
+    download_count: 55,
+    created_at: '2026-02-14T12:00:00Z',
+  }),
+  // —— File admin (pending) ——
+  doc({
+    id: 'doc-p1',
+    title: 'Système de recommandation pour bibliothèques universitaires',
+    abstract:
+      'Conception d\'un moteur de recommandation hybride basé sur le contenu et le comportement utilisateur.',
+    doc_type: 'memoir',
+    status: 'pending',
+    authors: ['Marie Kouassi'],
+    keywords: ['recommandation', 'NLP', 'bibliothèque'],
+    publication_year: 2026,
+    domain_id: 'dom-1',
+    institution_id: 'ins-2',
+    ai_extracted: true,
+    ai_confidence: 0.78,
+    submitter_email: 'demo@etudiant.cm',
+    created_at: '2026-06-01T10:30:00Z',
+  }),
+  doc({
+    id: 'doc-p2',
+    title: 'Analyse juridique du cadre légal de l\'open data au Cameroun',
+    abstract: 'Étude comparative des législations sur la transparence des données publiques.',
+    doc_type: 'memoir',
+    status: 'pending',
+    authors: ['Paul Atangana'],
+    keywords: ['droit', 'open data', 'gouvernance'],
+    publication_year: 2026,
+    domain_id: 'dom-6',
+    institution_id: 'ins-2',
+    ai_extracted: false,
+    submitter_email: 'paul@demo.cm',
+    created_at: '2026-06-02T09:00:00Z',
+  }),
+  doc({
+    id: 'doc-p3',
+    title: 'Algorithmes génétiques pour l\'optimisation de réseaux de transport',
+    abstract: 'Application des metaheuristiques à la planification urbaine de Yaoundé.',
+    doc_type: 'thesis',
+    status: 'pending',
+    authors: ['Ibrahim Sani', 'Prof. M. Tchinda'],
+    keywords: ['algorithmes génétiques', 'transport', 'optimisation'],
+    publication_year: 2025,
+    domain_id: 'dom-1',
+    institution_id: 'ins-1',
+    ai_extracted: true,
+    ai_confidence: 0.84,
+    submitter_email: 'ibrahim@demo.cm',
+    created_at: '2026-05-28T15:00:00Z',
+  }),
+  // —— Soumissions demo étudiant ——
+  doc({
+    id: 'doc-m1',
+    title: 'Système de recommandation pour bibliothèques universitaires',
+    abstract: 'Conception d\'un moteur de recommandation hybride.',
+    doc_type: 'memoir',
+    status: 'pending',
+    authors: ['Marie Kouassi'],
+    keywords: ['recommandation', 'NLP'],
+    publication_year: 2026,
+    domain_id: 'dom-1',
+    institution_id: 'ins-2',
+    ai_extracted: true,
+    ai_confidence: 0.78,
+    submitter_email: 'demo@etudiant.cm',
+    created_at: '2026-06-01T10:30:00Z',
+  }),
+  doc({
+    id: 'doc-m2',
+    title: 'Classification automatique de documents PDF académiques',
+    abstract: 'Pipeline ML pour catégoriser thèses et articles.',
+    doc_type: 'memoir',
+    status: 'approved',
+    authors: ['Marie Kouassi'],
+    keywords: ['classification', 'PDF', 'NLP'],
+    publication_year: 2025,
+    domain_id: 'dom-1',
+    institution_id: 'ins-2',
+    ai_extracted: true,
+    ai_confidence: 0.92,
+    submitter_email: 'demo@etudiant.cm',
+    view_count: 23,
+    download_count: 7,
+    created_at: '2026-04-05T11:00:00Z',
+  }),
+  doc({
+    id: 'doc-m3',
+    title: 'Projet de mémoire — version préliminaire rejetée',
+    abstract: 'Brouillon incomplet soumis par erreur.',
+    doc_type: 'memoir',
+    status: 'rejected',
+    authors: ['Marie Kouassi'],
+    keywords: ['brouillon'],
+    publication_year: 2026,
+    domain_id: 'dom-1',
+    institution_id: 'ins-2',
+    submitter_email: 'demo@etudiant.cm',
+    rejection_reason: 'Document incomplet — résumé et métadonnées manquants.',
+    created_at: '2026-03-10T08:00:00Z',
+  }),
+]
+
+export const MOCK_AI_EXTRACTION = {
+  title: 'Analyse sémantique des corpus académiques francophones',
+  authors: ['Marie Kouassi', 'Dr. Paul Ndjock'],
+  abstract:
+    'Ce mémoire propose une méthodologie d\'analyse sémantique automatique des travaux universitaires en langue française, avec évaluation sur un corpus de 500 documents.',
+  keywords: ['NLP', 'sémantique', 'corpus', 'francophonie'],
+  domain_suggestion: 'Informatique',
+  confidence: 0.89,
+}
+
+export const MOCK_CITATIONS = {
+  bibtex: `@mastersthesis{kouassi2026recommandation,
+  title={Système de recommandation pour bibliothèques universitaires},
+  author={Kouassi, Marie},
+  year={2026},
+  school={Université de Yaoundé I},
+  type={Mémoire de master}
+}`,
+  apa: 'Kouassi, M. (2026). Système de recommandation pour bibliothèques universitaires [Mémoire de master]. Université de Yaoundé I.',
+  mla: 'Kouassi, Marie. "Système de recommandation pour bibliothèques universitaires." Mémoire de master, Université de Yaoundé I, 2026.',
+}

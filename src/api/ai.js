@@ -1,8 +1,8 @@
 import api from './axios.js'
+import { isMockMode, mockExtractMetadata } from '../mocks/mockApi.js'
 
-// POST /ai/extract-metadata { document_id }
-// → { title, authors, abstract, keywords, domain_suggestion, confidence }
 export async function extractMetadata(documentId) {
+  if (isMockMode()) return mockExtractMetadata(documentId)
   try {
     const { data } = await api.post('/ai/extract-metadata', {
       document_id: documentId,
