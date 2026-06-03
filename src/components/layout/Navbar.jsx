@@ -121,7 +121,6 @@ export default function Navbar() {
             </>
           )}
 
-          {/* Mobile menu toggle */}
           <button
             type="button"
             className="flex h-8 w-8 items-center justify-center rounded-lg text-white/80 transition-colors duration-200 hover:bg-white/10 hover:text-white md:hidden"
@@ -142,7 +141,6 @@ export default function Navbar() {
         </div>
       </div>
 
-      {/* Mobile nav drawer */}
       {mobileOpen && (
         <nav className="border-t border-white/5 bg-navy-900/95 px-4 py-3 md:hidden">
           <div className="flex flex-col gap-1">
