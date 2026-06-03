@@ -1,6 +1,7 @@
 from typing import Annotated, List
 from fastapi import APIRouter, Depends, status, UploadFile, File, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy import or_, text
 from sqlmodel import select
 import uuid
 from src.shared.infrastructure.database import get_async_session
@@ -45,14 +46,35 @@ async def creer_ressource(
 
 @router.get("/", response_model=List[RessourceResponse])
 async def lister_ressources(
+    current_user: Annotated[Utilisateur, Depends(get_current_user)],
     type_doc: str | None = None,
-    ue_id: uuid.UUID | None = None,
+    categorie: str | None = None,
+    q: str | None = None,
+    mine: bool = False,
     session: AsyncSession = Depends(get_async_session),
-    current_user: Annotated[Utilisateur | None, Depends(get_current_user)] = None,
 ):
-    stmt = select(RessourceModel).where(RessourceModel.publiee == True)
+    stmt = select(RessourceModel)
+
+    if mine:
+        # Mes documents : tout ce que je possède (publié ou non)
+        stmt = stmt.where(RessourceModel.proprietaire_id == current_user.id)
+    else:
+        # Catalogue : publiés OU possédés par l'utilisateur courant
+        stmt = stmt.where(
+            or_(
+                RessourceModel.publiee == True,
+                RessourceModel.proprietaire_id == current_user.id,
+            )
+        )
+
     if type_doc:
         stmt = stmt.where(RessourceModel.type_document == type_doc.upper())
+    if categorie:
+        stmt = stmt.where(RessourceModel.categorie == categorie.upper())
+    if q:
+        stmt = stmt.where(RessourceModel.titre.ilike(f"%{q}%"))
+
+    stmt = stmt.order_by(RessourceModel.titre)
     result = await session.execute(stmt)
     return [
         RessourceResponse.model_validate(r, from_attributes=True)
@@ -88,7 +110,96 @@ async def uploader_fichier(
         taille_octets=len(contenu),
         type_mime=fichier.content_type or "application/pdf",
     ))
+
+    # Auto-publication : une ressource dotée d'un fichier devient visible au catalogue
+    model = await session.get(RessourceModel, ressource_id)
+    if model and not model.publiee:
+        model.publiee = True
+        await session.commit()
+
     return {"fichier_id": fichier_id}
+
+
+@router.delete("/{ressource_id}", status_code=status.HTTP_204_NO_CONTENT)
+async def supprimer_ressource(
+    ressource_id: uuid.UUID,
+    current_user: Annotated[Utilisateur, Depends(get_current_user)],
+    session: AsyncSession = Depends(get_async_session),
+):
+    model = await session.get(RessourceModel, ressource_id)
+    if not model:
+        raise HTTPException(status_code=404, detail="Ressource introuvable")
+
+    # Seul le propriétaire ou un admin peut supprimer
+    if model.proprietaire_id != current_user.id and not current_user.est_admin():
+        raise HTTPException(
+            status_code=403,
+            detail="Vous ne pouvez supprimer que vos propres documents",
+        )
+
+    # Récupère les fichiers pour nettoyage MinIO
+    fichiers_result = await session.execute(
+        select(FichierModel).where(FichierModel.ressource_id == ressource_id)
+    )
+    fichiers = list(fichiers_result.scalars())
+
+    # Supprime les lignes référençant la ressource (toutes schémas confondus)
+    tables_referencantes = [
+        "usage.consultation",
+        "usage.telechargement",
+        "usage.favori",
+        "rag.chunk",
+        "classification.ressource_thematique",
+        "classification.ressource_mot_cle",
+        "document.ressource_ue",
+        "document.ressource_auteur",
+        "document.fichier",
+    ]
+    for table in tables_referencantes:
+        await session.execute(
+            text(f"DELETE FROM {table} WHERE ressource_id = :rid"),
+            {"rid": str(ressource_id)},
+        )
+    await session.delete(model)
+    await session.commit()
+
+    # Nettoyage du stockage objet (best-effort, non bloquant)
+    stockage = MinioAdapter()
+    for f in fichiers:
+        try:
+            await stockage.supprimer(f.minio_bucket, f.minio_key)
+        except Exception:
+            pass
+
+    return None
+
+
+@router.get("/{ressource_id}/fichiers")
+async def lister_fichiers(
+    ressource_id: uuid.UUID,
+    current_user: Annotated[Utilisateur, Depends(get_current_user)],
+    session: AsyncSession = Depends(get_async_session),
+):
+    result = await session.execute(
+        select(FichierModel).where(FichierModel.ressource_id == ressource_id)
+    )
+    fichiers = list(result.scalars())
+    stockage = MinioAdapter()
+    sortie = []
+    for f in fichiers:
+        url = None
+        try:
+            url = await stockage.telecharger_url(f.minio_bucket, f.minio_key)
+        except Exception:
+            url = None
+        sortie.append({
+            "id": str(f.id),
+            "nom_original": f.nom_original,
+            "taille_octets": f.taille_octets,
+            "type_mime": f.type_mime,
+            "url": url,
+        })
+    return sortie
 
 
 @router.get("/{ressource_id}/fichiers/{fichier_id}/url", response_model=PresignedUrlResponse)

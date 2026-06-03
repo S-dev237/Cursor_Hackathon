@@ -40,7 +40,18 @@ settings = get_settings()
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     # ── Démarrage ──────────────────────────────────────────────────────
-    await create_db_and_tables()
+    import logging
+    logger = logging.getLogger("acadoc.startup")
+
+    try:
+        await create_db_and_tables()
+        logger.info("Base de données initialisée.")
+    except Exception as exc:
+        logger.warning(
+            "Impossible de se connecter à PostgreSQL au démarrage : %s\n"
+            "  → Lancez : make docker-up  (ou docker compose up -d postgres)",
+            exc,
+        )
 
     # Enregistrement des listeners sur l'EventBus
     bus = get_event_bus()
@@ -88,10 +99,8 @@ def create_app() -> FastAPI:
         app=app,
         engine=engine,
         authentication_backend=authentication_backend,
-        title="📚 AcaDoc Admin",
+        title="AcaDoc Admin",
         base_url="/admin",
-        logo_url="https://fastapi.tiangolo.com/img/favicon.png",
-        templates_dir=None,
     )
     for view in ALL_VIEWS:
         admin.add_view(view)
