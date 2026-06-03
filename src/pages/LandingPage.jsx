@@ -6,6 +6,7 @@ import Seo from '../components/Seo.jsx'
 import Navbar from '../components/layout/Navbar.jsx'
 import HeroSearchBar from '../components/search/HeroSearchBar.jsx'
 import DocumentCard from '../components/ui/DocumentCard.jsx'
+import Logo from '../components/ui/Logo.jsx'
 import AnimatedCounter from '../components/ui/AnimatedCounter.jsx'
 import FloatingDocs from '../components/ui/FloatingDocs.jsx'
 import AiScanIllustration from '../components/ui/AiScanIllustration.jsx'
@@ -531,10 +532,8 @@ export default function LandingPage() {
       <footer className="bg-navy-800">
         <div className="mx-auto grid max-w-7xl gap-10 px-4 py-14 sm:grid-cols-3 sm:px-6">
           <div>
-            <span className="font-serif text-lg font-semibold text-white">
-              OpenScience Hub
-            </span>
-            <p className="mt-3 max-w-xs text-sm leading-relaxed text-white/45">
+            <Logo size="sm" variant="dark" link={false} className="mb-3" />
+            <p className="max-w-xs text-sm leading-relaxed text-white/45">
               Répertoire institutionnel ouvert des travaux académiques
               universitaires.
             </p>

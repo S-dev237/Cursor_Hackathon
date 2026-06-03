@@ -3,27 +3,7 @@ import { Link, NavLink, useNavigate } from 'react-router-dom'
 import clsx from 'clsx'
 import { useAuth } from '../../hooks/useAuth.js'
 import useScrollPosition from '../../hooks/useScrollPosition.js'
-
-function Logo() {
-  return (
-    <Link to="/" className="flex items-center gap-2.5 transition-opacity duration-200 hover:opacity-90">
-      <span className="flex h-7 w-7 items-center justify-center rounded-md bg-teal-500 text-white shadow-teal">
-        <svg viewBox="0 0 24 24" fill="none" className="h-4 w-4" aria-hidden="true">
-          <path d="M12 3L2 8l10 5 10-5-10-5z" fill="currentColor" />
-          <path
-            d="M5 11v5c0 1.5 3.1 3 7 3s7-1.5 7-3v-5"
-            stroke="currentColor"
-            strokeWidth="1.5"
-            strokeLinecap="round"
-          />
-        </svg>
-      </span>
-      <span className="font-serif text-lg font-semibold tracking-tight text-white">
-        OpenScience Hub
-      </span>
-    </Link>
-  )
-}
+import Logo from '../ui/Logo.jsx'
 
 function initials(name = '') {
   return name
@@ -66,7 +46,7 @@ export default function Navbar() {
       )}
     >
       <div className="mx-auto flex h-12 max-w-7xl items-center gap-6 px-4 sm:px-6">
-        <Logo />
+        <Logo size="sm" variant="light" />
 
         <nav className="hidden items-center gap-6 md:flex">
           {NAV_LINKS.map(({ to, label }) => (

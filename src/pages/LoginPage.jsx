@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { Link, useNavigate, useLocation } from 'react-router-dom'
 import { useAuth } from '../hooks/useAuth.js'
 import Navbar from '../components/layout/Navbar.jsx'
+import Logo from '../components/ui/Logo.jsx'
 import Spinner from '../components/ui/Spinner.jsx'
 
 const MOCK_MODE = import.meta.env.VITE_MOCK_API === 'true'
@@ -64,7 +65,8 @@ export default function LoginPage() {
       <Navbar />
       <main className="flex flex-1 items-center justify-center px-4 py-12">
         <div className="w-full max-w-md">
-          <div className="mb-8 text-center">
+          <div className="mb-8 flex flex-col items-center text-center">
+            <Logo size="md" variant="dark" className="mb-5" link={false} />
             <h1 className="font-serif text-3xl font-semibold text-gray-900">
               Connexion
             </h1>
