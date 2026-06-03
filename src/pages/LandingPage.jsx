@@ -532,7 +532,7 @@ export default function LandingPage() {
       <footer className="bg-navy-800">
         <div className="mx-auto grid max-w-7xl gap-10 px-4 py-14 sm:grid-cols-3 sm:px-6">
           <div>
-            <Logo size="sm" variant="dark" link={false} className="mb-3" />
+            <Logo variant="full" size="sm" onDark={false} link={false} className="mb-3" />
             <p className="max-w-xs text-sm leading-relaxed text-white/45">
               Répertoire institutionnel ouvert des travaux académiques
               universitaires.

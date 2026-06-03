@@ -45,7 +45,7 @@ export default function RegisterPage() {
       <main className="flex flex-1 items-center justify-center px-4 py-12">
         <div className="w-full max-w-md">
           <div className="mb-8 flex flex-col items-center text-center">
-            <Logo size="md" variant="dark" className="mb-5" link={false} />
+            <Logo variant="full" size="md" onDark={false} className="mb-5" link={false} />
             <h1 className="font-serif text-3xl font-semibold text-gray-text">
               Créer un compte
             </h1>

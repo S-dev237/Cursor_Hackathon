@@ -46,7 +46,7 @@ export default function Navbar() {
       )}
     >
       <div className="mx-auto flex h-12 max-w-7xl items-center gap-6 px-4 sm:px-6">
-        <Logo size="sm" variant="light" />
+        <Logo variant="nav" size="sm" />
 
         <nav className="hidden items-center gap-6 md:flex">
           {NAV_LINKS.map(({ to, label }) => (
