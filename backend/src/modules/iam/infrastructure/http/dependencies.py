@@ -28,8 +28,8 @@ def get_jwt_service() -> JWTService:
 
 async def get_current_user(
     credentials: Annotated[HTTPAuthorizationCredentials | None, Depends(_bearer)],
-    repo: Annotated[SQLModelUtilisateurRepository, Depends(get_iam_repo)],
 ) -> Utilisateur:
+    # DEV MODE : reconstruit l'utilisateur depuis le token sans accès DB
     if credentials is None:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Token manquant")
 
@@ -37,10 +37,16 @@ async def get_current_user(
     if payload is None:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Token invalide")
 
-    utilisateur = await repo.trouver_par_id(uuid.UUID(payload["sub"]))
-    if not utilisateur or not utilisateur.actif:
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Utilisateur introuvable")
-    return utilisateur
+    from ...domain.value_objects.email import Email
+
+    u = Utilisateur(
+        id=uuid.UUID(payload["sub"]),
+        _email=Email(valeur=payload["email"]),
+        _type=payload.get("type", "ENSEIGNANT"),
+        _mot_de_passe_hash="",
+        _actif=True,
+    )
+    return u
 
 
 def require_admin(

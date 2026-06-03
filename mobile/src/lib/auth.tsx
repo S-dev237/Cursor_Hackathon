@@ -10,6 +10,23 @@ import * as SecureStore from 'expo-secure-store';
 import { api, setTokenGetter } from './api';
 import type { Utilisateur, TypeUtilisateur } from './types';
 
+// ── DEV MODE ──────────────────────────────────────────────────────────
+// Authentification locale sans serveur. Mettre à false pour ré-activer
+// la vraie validation backend.
+const DEV_AUTH = true;
+
+function makeFakeUser(email: string, type_user: TypeUtilisateur): Utilisateur {
+  return {
+    id: 'dev-' + email,
+    email,
+    type: type_user,
+    nom: email.split('@')[0],
+    prenom: null,
+    actif: true,
+  };
+}
+// ──────────────────────────────────────────────────────────────────────
+
 const TOKEN_KEY = 'acadoc_token';
 
 interface AuthState {
@@ -50,13 +67,18 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         const stored = await SecureStore.getItemAsync(TOKEN_KEY);
         if (stored) {
           applyToken(stored);
-          try {
-            const me = await api.me();
-            setUser(me);
-          } catch {
-            // Token expiré / invalide
-            await SecureStore.deleteItemAsync(TOKEN_KEY);
-            applyToken(null);
+          if (DEV_AUTH) {
+            // Reconstruit l'utilisateur depuis le pseudo-token stocké
+            const [email, type] = stored.split('|');
+            setUser(makeFakeUser(email, (type as TypeUtilisateur) ?? 'ENSEIGNANT'));
+          } else {
+            try {
+              const me = await api.me();
+              setUser(me);
+            } catch {
+              await SecureStore.deleteItemAsync(TOKEN_KEY);
+              applyToken(null);
+            }
           }
         }
       } finally {
@@ -65,8 +87,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     })();
   }, []);
 
-  const signIn = async (email: string, motDePasse: string) => {
-    const t = await api.connecter(email, motDePasse);
+  const signIn = async (email: string, _motDePasse: string) => {
+    if (DEV_AUTH) {
+      const fakeToken = `${email}|ENSEIGNANT`;
+      await SecureStore.setItemAsync(TOKEN_KEY, fakeToken);
+      applyToken(fakeToken);
+      setUser(makeFakeUser(email, 'ENSEIGNANT'));
+      return;
+    }
+    const t = await api.connecter(email, _motDePasse);
     await SecureStore.setItemAsync(TOKEN_KEY, t);
     applyToken(t);
     const me = await api.me();
@@ -80,6 +109,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     nom?: string;
     prenom?: string;
   }) => {
+    if (DEV_AUTH) {
+      const fakeToken = `${payload.email}|${payload.type_user}`;
+      await SecureStore.setItemAsync(TOKEN_KEY, fakeToken);
+      applyToken(fakeToken);
+      setUser(makeFakeUser(payload.email, payload.type_user));
+      return;
+    }
     await api.inscrire(payload);
     await signIn(payload.email, payload.mot_de_passe);
   };
@@ -92,6 +128,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const refreshUser = async () => {
     if (!tokenRef.current) return;
+    if (DEV_AUTH) return;
     const me = await api.me();
     setUser(me);
   };

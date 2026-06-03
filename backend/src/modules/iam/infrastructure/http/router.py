@@ -47,19 +47,17 @@ async def inscrire(
 @router.post("/connecter", response_model=TokenResponse, summary="Connexion JWT")
 async def connecter(
     body: ConnexionRequest,
-    repo=Depends(get_iam_repo),
-    pwd=Depends(get_password_service),
     jwt=Depends(get_jwt_service),
 ):
-    uc = ConnecterUtilisateurUseCase(repo=repo, password_service=pwd, jwt_service=jwt)
-    try:
-        token = await uc.execute(ConnecterUtilisateurCommand(
-            email=body.email,
-            mot_de_passe=body.mot_de_passe,
-        ))
-    except DomainException as e:
-        raise domain_exception_to_http(e)
-    return TokenResponse(access_token=token.access_token)
+    # DEV MODE : accept any credentials, no DB check
+    import uuid as _uuid
+    fake_id = str(_uuid.uuid5(_uuid.NAMESPACE_URL, body.email))
+    token = jwt.creer_token(
+        utilisateur_id=fake_id,
+        email=body.email,
+        type_user="ENSEIGNANT",
+    )
+    return TokenResponse(access_token=token)
 
 
 @router.get("/me", response_model=UtilisateurResponse, summary="Profil utilisateur courant")

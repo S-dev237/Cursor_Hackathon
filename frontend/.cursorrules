@@ -1,0 +1,301 @@
+# OpenScience Hub — Cursor Project Rules
+# Ce fichier est lu automatiquement par Cursor à chaque session.
+# Ne pas supprimer. Ne pas modifier pendant le hackathon.
+
+## Contexte du projet
+
+Tu travailles sur **OpenScience Hub**, un répertoire institutionnel de travaux
+académiques universitaires (thèses, mémoires, articles) développé dans le cadre
+du Hackathon J.U.I.N 2026 — Édition Cursor, Thème 2.
+
+Contrainte : MVP fonctionnel en 7 heures. Priorise toujours la fonctionnalité
+sur la perfection. Si une feature dépasse son budget temps, génère une version
+minimale qui fonctionne et laisse un commentaire `// TODO: améliorer`.
+
+---
+
+## Stack technique
+
+### Frontend (CE repo)
+- React 18 + Vite
+- React Router v6 (createBrowserRouter)
+- Tailwind CSS (config custom avec palette navy/teal)
+- Axios (instance configurée dans src/api/axios.js)
+- react-pdf (lecteur PDF intégré, PDF.js)
+- Fonts Google : Crimson Pro (serif titres docs) + DM Sans (UI) + DM Mono (codes)
+
+### Backend (repo séparé, port 8000)
+- FastAPI + PostgreSQL 16 + SQLAlchemy 2
+- Auth : JWT HS256, access token 30min, refresh 7 jours
+- Upload : multipart/form-data, PDFs stockés dans backend/uploads/
+- Search : PostgreSQL full-text search (ts_vector + pg_trgm)
+
+### IA (intégrée au backend)
+- Claude API — claude-sonnet-4-20250514
+- Endpoint : POST /ai/extract-metadata { document_id }
+- Retourne : { title, authors, abstract, keywords, domain_suggestion, confidence }
+
+---
+
+## Contrats API — NE JAMAIS DEVINER CES ROUTES
+
+```
+AUTH
+  POST /auth/register       body: { email, password, full_name, role }
+                            → { access_token, token_type, user: UserProfile }
+  POST /auth/login          body: { email, password }
+                            → { access_token, token_type, user: UserProfile }
+  POST /auth/refresh        header: Authorization Bearer <refresh_token>
+                            → { access_token }
+  GET  /auth/me             → UserProfile
+  PUT  /auth/me             body: Partial<UserProfile> → UserProfile
+
+DOCUMENTS
+  GET  /search              ?q=&type=&domain_id=&institution_id=
+                             &year_from=&year_to=&sort=relevance|date|downloads
+                             &page=1&per_page=12&ai_only=false
+                            → { documents: Document[], total, page, per_page }
+  GET  /documents/{id}      → Document
+  GET  /documents/my        → Document[] (soumissions de l'utilisateur connecté)
+  POST /documents/          multipart: file + metadata JSON
+                            → Document (status: pending)
+  PUT  /documents/{id}      body: Partial<Document> → Document
+  GET  /documents/{id}/download  → redirect PDF
+  POST /documents/{id}/view      → { view_count: number }
+  GET  /documents/{id}/citation  ?format=bibtex|apa|mla → { citation: string }
+
+IA
+  POST /ai/extract-metadata body: { document_id: string }
+                            → { title, authors, abstract, keywords,
+                                domain_suggestion, confidence: 0.0–1.0 }
+
+UTILS
+  GET  /stats               → { total_documents, total_users,
+                                total_institutions, total_downloads,
+                                pending_reviews }
+  GET  /domains             → { id, name, slug }[]
+  GET  /institutions        → { id, name, acronym, city }[]
+
+ADMIN (role: admin uniquement)
+  GET  /admin/queue         ?page=&per_page= → { documents: Document[], total }
+  PATCH /admin/documents/{id}/review
+                            body: { status: 'approved'|'rejected',
+                                    rejection_reason?: string }
+                            → Document
+```
+
+---
+
+## Types TypeScript / JSDoc
+
+```typescript
+type UserRole = 'student' | 'researcher' | 'admin'
+type DocType  = 'thesis' | 'memoir' | 'article' | 'report'
+type DocStatus = 'pending' | 'approved' | 'rejected'
+
+interface UserProfile {
+  id: string
+  email: string
+  full_name: string
+  role: UserRole
+  institution_id?: string
+  avatar_url?: string
+}
+
+interface Document {
+  id: string
+  title: string
+  abstract: string
+  doc_type: DocType
+  status: DocStatus
+  authors: string[]
+  keywords: string[]
+  publication_year: number
+  domain_id: string
+  domain_name: string
+  institution_id: string
+  institution_name: string
+  file_size_kb: number
+  page_count: number
+  view_count: number
+  download_count: number
+  ai_extracted: boolean
+  ai_confidence: number       // 0.0 – 1.0
+  created_at: string          // ISO 8601
+}
+
+interface SearchResult {
+  documents: Document[]
+  total: number
+  page: number
+  per_page: number
+}
+
+interface AiExtractionResult {
+  title: string
+  authors: string[]
+  abstract: string
+  keywords: string[]
+  domain_suggestion: string
+  confidence: number
+}
+```
+
+---
+
+## Design System — TOUJOURS RESPECTER
+
+### Palette de couleurs (Tailwind custom config)
+```js
+// tailwind.config.js → theme.extend.colors
+navy:  { DEFAULT: '#0B1929', mid: '#132337' }
+teal:  { DEFAULT: '#1D9E75', light: '#E1F5EE', mid: '#5DCAA5', dark: '#0F6E56', border: '#9FE1CB' }
+gray:  { bg: '#F4F3EF', border: '#D3D1C7', muted: '#888780', text: '#2C2C2A', light: '#F1EFE8' }
+amber: { light: '#FAEEDA', DEFAULT: '#BA7517', dark: '#633806' }
+```
+
+### Typographie
+```css
+/* Titres de documents académiques */
+font-family: 'Crimson Pro', Georgia, serif;
+
+/* Interface (boutons, labels, nav) */
+font-family: 'DM Sans', sans-serif;
+
+/* Codes, badges techniques, métadonnées */
+font-family: 'DM Mono', monospace;
+```
+
+### Badges de type de document
+```
+thesis  → bg #EEEDFE text #534AB7  (purple)
+memoir  → bg #E6F1FB text #185FA5  (blue)
+article → bg #E1F5EE text #085041  (teal)
+report  → bg #FAEEDA text #633806  (amber)
+```
+
+### Badge IA (ai_extracted = true)
+```
+bg #E1F5EE, border #5DCAA5, text #085041
+icône sparkle + texte "IA" ou "Métadonnées IA"
+```
+
+### Navbar
+- Fond dark navy #0B1929
+- Logo : carré teal #1D9E75 + icône école + "OpenScience Hub" (Crimson Pro)
+- Sticky top, height 48px
+
+### Boutons
+- Primaire : bg teal #1D9E75, text blanc, border-radius 6px
+- Secondaire ghost : border #D3D1C7, text #5F5E5A, bg blanc
+- Danger : bg #FCEBEB, border #F09595, text #791F1F
+- Succès : bg #E1F5EE, border #5DCAA5, text #085041
+
+### Cards documents
+- Fond blanc, border 0.5px #D3D1C7, border-radius 8px
+- Hover : border-color #5DCAA5 (teal)
+- Titre : Crimson Pro 14px font-weight 600 color #2C2C2A
+- Métadonnées : DM Sans 11px color #888780
+
+### Champs pré-remplis par l'IA
+```
+border: 1px solid #5DCAA5
+background: #F0FAF6
+```
+Chaque champ touché par l'IA affiche un badge "IA" (DM Mono 9px, bg teal-light).
+
+---
+
+## Conventions de code
+
+### Structure des fichiers
+```
+src/
+├── api/          # fonctions fetch uniquement (pas de state)
+├── contexts/     # React Context providers
+├── components/
+│   ├── layout/   # Navbar, PrivateRoute, PageWrapper
+│   ├── ui/       # composants réutilisables (Card, Badge, Toast, Pagination)
+│   └── search/   # SearchBar, FilterSidebar
+├── pages/        # une page = un fichier, nom en PascalCase + Page.jsx
+├── hooks/        # préfixe use*, logique métier réutilisable
+└── constants/    # couleurs, types enum, config
+```
+
+### Règles de nommage
+- Composants React : PascalCase (`DocumentCard.jsx`)
+- Hooks : camelCase préfixé use (`useSearch.js`)
+- Fonctions API : camelCase verbe+nom (`fetchDocuments`, `submitDocument`)
+- Constantes : SCREAMING_SNAKE_CASE (`DOC_TYPE_COLORS`)
+
+### Gestion des erreurs API
+Toutes les fonctions dans `src/api/` retournent `{ data, error }` :
+```js
+async function fetchDocument(id) {
+  try {
+    const { data } = await api.get(`/documents/${id}`)
+    return { data, error: null }
+  } catch (err) {
+    return { data: null, error: err.response?.data?.detail || 'Erreur réseau' }
+  }
+}
+```
+Jamais de `throw` depuis les fonctions API. Le composant gère l'affichage de l'erreur.
+
+### State management
+- Pas de Redux, pas de Zustand pour l'instant.
+- AuthContext pour l'utilisateur connecté (global).
+- useState / useReducer local pour les formulaires et les listes.
+- URL searchParams (useSearchParams) pour synchroniser les filtres de recherche.
+
+### Variables d'environnement
+```
+import.meta.env.VITE_API_URL  // URL du backend FastAPI (défaut: http://localhost:8000)
+```
+Ne jamais hardcoder l'URL du backend. Toujours utiliser import.meta.env.VITE_API_URL.
+
+### Axios instance (src/api/axios.js)
+```js
+// L'instance s'appelle `api` et est importée dans tous les fichiers api/*.js
+import api from './axios.js'
+```
+
+### LocalStorage keys
+```
+'osh_token'       // JWT access token
+'osh_user'        // UserProfile JSON stringifié
+'osh_draft'       // Brouillon formulaire soumission
+```
+
+---
+
+## Comportements critiques à ne pas oublier
+
+1. **JWT expiration** : intercepteur Axios sur réponse 401 → supprime token + redirect /login
+2. **URL params search** : tous les filtres de /search doivent être dans l'URL (partageable)
+3. **POST /documents/:id/view** : appelé au montage de DocumentPage, fire & forget (pas d'await)
+4. **react-pdf worker** : doit être configuré avant tout usage de <Document>
+   ```js
+   pdfjs.GlobalWorkerOptions.workerSrc = new URL(
+     'pdfjs-dist/build/pdf.worker.min.js', import.meta.url
+   ).toString()
+   ```
+5. **Upload PDF** : valider extension .pdf + taille ≤ 20Mo côté frontend avant envoi
+6. **Optimistic UI admin** : retirer la card immédiatement au clic, remettre si erreur API
+7. **PrivateRoute admin** : vérifier `user.role === 'admin'`, pas juste `user !== null`
+
+---
+
+## Ce que ce repo NE fait PAS
+- Pas d'appel direct à Claude API depuis le frontend (tout passe par le backend)
+- Pas de stockage de fichiers PDF côté frontend
+- Pas de WebSocket (tout est REST polling)
+- Pas de SSR, pas de Next.js
+
+---
+
+## Équipe & coordination
+- Dev A (Backend) expose les endpoints sur port 8000, démarre en Phase 0
+- Dev B (Frontend = CE repo) consomme les endpoints
+- Dev C (IA + Admin) intègre /ai/extract-metadata et le panel admin
+- Point de synchronisation obligatoire à H1:30 : tester POST /auth/login end-to-end
