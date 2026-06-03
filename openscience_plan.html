@@ -1,0 +1,304 @@
+
+<style>
+@import url('https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&display=swap');
+*{box-sizing:border-box;margin:0;padding:0}
+.plan{font-family:var(--font-sans);padding:4px 0}
+.tabs{display:flex;gap:0;border-bottom:0.5px solid var(--color-border-tertiary);margin-bottom:20px}
+.tab{padding:8px 16px;font-size:13px;color:var(--color-text-secondary);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px}
+.tab.active{color:var(--color-text-primary);border-bottom-color:#1D9E75;font-weight:500}
+.panel{display:none}.panel.active{display:block}
+.module{margin-bottom:14px;border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-lg);overflow:hidden}
+.module-head{display:flex;align-items:center;gap:10px;padding:10px 14px;background:var(--color-background-secondary);cursor:pointer}
+.module-icon{width:28px;height:28px;border-radius:6px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.module-title{font-size:13px;font-weight:500;color:var(--color-text-primary)}
+.module-sub{font-size:11px;color:var(--color-text-secondary);margin-left:auto}
+.module-body{padding:10px 14px;display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.feat{display:flex;align-items:flex-start;gap:7px;font-size:12px;color:var(--color-text-secondary);padding:4px 0}
+.feat i{font-size:13px;flex-shrink:0;margin-top:1px}
+.feat-ai{color:#0F6E56;background:#E1F5EE;padding:2px 7px;border-radius:999px;font-size:10px;font-family:'DM Mono',monospace;margin-left:4px}
+.phase{margin-bottom:12px;display:grid;grid-template-columns:80px 1fr;gap:0}
+.phase-time{font-family:'DM Mono',monospace;font-size:11px;color:var(--color-text-secondary);padding-top:3px;border-right:1.5px solid var(--color-border-tertiary);padding-right:12px}
+.phase-content{padding-left:16px;position:relative}
+.phase-content::before{content:'';position:absolute;left:0;top:8px;width:8px;height:8px;border-radius:50%;background:var(--color-background-secondary);border:1.5px solid var(--color-border-secondary)}
+.phase-title{font-size:13px;font-weight:500;color:var(--color-text-primary);margin-bottom:4px}
+.phase-tasks{display:flex;flex-wrap:wrap;gap:5px}
+.task{font-size:11px;padding:3px 8px;border-radius:999px;border:0.5px solid var(--color-border-tertiary);color:var(--color-text-secondary)}
+.task.ai{background:#E1F5EE;border-color:#5DCAA5;color:#0F6E56}
+.task.risk{background:#FAEEDA;border-color:#EF9F27;color:#633806}
+.stack-row{display:flex;gap:8px;flex-wrap:wrap;margin-top:6px}
+.stack-badge{font-size:11px;font-family:'DM Mono',monospace;padding:3px 8px;border-radius:4px;background:var(--color-background-secondary);border:0.5px solid var(--color-border-tertiary);color:var(--color-text-primary)}
+.section-label{font-size:10px;font-family:'DM Mono',monospace;color:var(--color-text-secondary);letter-spacing:.07em;text-transform:uppercase;margin-bottom:10px}
+.risk-card{background:#FAEEDA;border:0.5px solid #EF9F27;border-radius:var(--border-radius-md);padding:10px 12px;font-size:12px;color:#633806;margin-top:16px}
+.risk-card b{display:block;font-size:11px;font-family:'DM Mono',monospace;letter-spacing:.06em;text-transform:uppercase;margin-bottom:6px}
+</style>
+
+<h2 class="sr-only">Plan complet OpenScience Hub — fonctionnalités et plan de développement</h2>
+
+<div class="plan">
+  <div class="tabs">
+    <div class="tab active" onclick="switchTab('features',this)"><i class="ti ti-layout-grid" style="font-size:13px;margin-right:5px" aria-hidden="true"></i>Fonctionnalités</div>
+    <div class="tab" onclick="switchTab('devplan',this)"><i class="ti ti-clock" style="font-size:13px;margin-right:5px" aria-hidden="true"></i>Plan de dev (7h)</div>
+    <div class="tab" onclick="switchTab('stack',this)"><i class="ti ti-stack" style="font-size:13px;margin-right:5px" aria-hidden="true"></i>Stack technique</div>
+  </div>
+
+  <div class="panel active" id="panel-features">
+
+    <div class="module">
+      <div class="module-head">
+        <div class="module-icon" style="background:#E6F1FB"><i class="ti ti-world" style="color:#185FA5;font-size:15px" aria-hidden="true"></i></div>
+        <div><div class="module-title">Landing page</div></div>
+        <div class="module-sub">publique</div>
+      </div>
+      <div class="module-body">
+        <div class="feat"><i class="ti ti-check" style="color:#1D9E75"></i>Hero + barre de recherche rapide</div>
+        <div class="feat"><i class="ti ti-check" style="color:#1D9E75"></i>Compteurs stats (travaux, universités)</div>
+        <div class="feat"><i class="ti ti-check" style="color:#1D9E75"></i>Dernières publications (cards)</div>
+        <div class="feat"><i class="ti ti-check" style="color:#1D9E75"></i>CTA Soumettre / Explorer</div>
+        <div class="feat"><i class="ti ti-check" style="color:#1D9E75"></i>Section fonctionnalités clés</div>
+        <div class="feat"><i class="ti ti-check" style="color:#1D9E75"></i>Footer (liens, contact, à propos)</div>
+      </div>
+    </div>
+
+    <div class="module">
+      <div class="module-head">
+        <div class="module-icon" style="background:#E1F5EE"><i class="ti ti-lock" style="color:#0F6E56;font-size:15px" aria-hidden="true"></i></div>
+        <div><div class="module-title">M1 — Authentification & rôles</div></div>
+        <div class="module-sub">3 rôles</div>
+      </div>
+      <div class="module-body">
+        <div class="feat"><i class="ti ti-check" style="color:#1D9E75"></i>Inscription (Étudiant / Chercheur / Admin)</div>
+        <div class="feat"><i class="ti ti-check" style="color:#1D9E75"></i>Connexion JWT + refresh token</div>
+        <div class="feat"><i class="ti ti-check" style="color:#1D9E75"></i>Page profil utilisateur</div>
+        <div class="feat"><i class="ti ti-check" style="color:#1D9E75"></i>RBAC — contrôle d'accès par rôle</div>
+      </div>
+    </div>
+
+    <div class="module">
+      <div class="module-head">
+        <div class="module-icon" style="background:#EEEDFE"><i class="ti ti-upload" style="color:#534AB7;font-size:15px" aria-hidden="true"></i></div>
+        <div><div class="module-title">M2 — Dépôt de travaux</div></div>
+        <div class="module-sub">PDF + métadonnées</div>
+      </div>
+      <div class="module-body">
+        <div class="feat"><i class="ti ti-check" style="color:#1D9E75"></i>Formulaire : titre, auteurs, résumé, mots-clés</div>
+        <div class="feat"><i class="ti ti-check" style="color:#1D9E75"></i>Champs : type, année, institution, domaine</div>
+        <div class="feat"><i class="ti ti-check" style="color:#1D9E75"></i>Upload PDF (validation format/taille)</div>
+        <div class="feat"><i class="ti ti-check" style="color:#1D9E75"></i>Statuts : en attente / validé / rejeté</div>
+        <div class="feat"><i class="ti ti-sparkles" style="color:#1D9E75"></i>Extraction IA des métadonnées PDF <span class="feat-ai">BONUS IA</span></div>
+        <div class="feat"><i class="ti ti-sparkles" style="color:#1D9E75"></i>Suggestion automatique de thématiques <span class="feat-ai">BONUS IA</span></div>
+      </div>
+    </div>
+
+    <div class="module">
+      <div class="module-head">
+        <div class="module-icon" style="background:#E6F1FB"><i class="ti ti-search" style="color:#185FA5;font-size:15px" aria-hidden="true"></i></div>
+        <div><div class="module-title">M3 — Recherche & découverte</div></div>
+        <div class="module-sub">moteur indexé</div>
+      </div>
+      <div class="module-body">
+        <div class="feat"><i class="ti ti-check" style="color:#1D9E75"></i>Recherche full-text (titre, résumé, mots-clés)</div>
+        <div class="feat"><i class="ti ti-check" style="color:#1D9E75"></i>Filtre : type (thèse / mémoire / article)</div>
+        <div class="feat"><i class="ti ti-check" style="color:#1D9E75"></i>Filtre : année, domaine, institution</div>
+        <div class="feat"><i class="ti ti-check" style="color:#1D9E75"></i>Tri : pertinence / date / téléchargements</div>
+        <div class="feat"><i class="ti ti-check" style="color:#1D9E75"></i>Pagination des résultats</div>
+        <div class="feat"><i class="ti ti-check" style="color:#1D9E75"></i>Aperçu rapide (hover card)</div>
+      </div>
+    </div>
+
+    <div class="module">
+      <div class="module-head">
+        <div class="module-icon" style="background:#FAEEDA"><i class="ti ti-file" style="color:#854F0B;font-size:15px" aria-hidden="true"></i></div>
+        <div><div class="module-title">M4 — Lecture & consultation</div></div>
+        <div class="module-sub">page détail</div>
+      </div>
+      <div class="module-body">
+        <div class="feat"><i class="ti ti-check" style="color:#1D9E75"></i>Lecteur PDF intégré (PDF.js)</div>
+        <div class="feat"><i class="ti ti-check" style="color:#1D9E75"></i>Téléchargement PDF</div>
+        <div class="feat"><i class="ti ti-check" style="color:#1D9E75"></i>Export citation (BibTeX, APA)</div>
+        <div class="feat"><i class="ti ti-check" style="color:#1D9E75"></i>Compteur de vues et téléchargements</div>
+        <div class="feat"><i class="ti ti-check" style="color:#1D9E75"></i>Travaux similaires (même domaine)</div>
+        <div class="feat"><i class="ti ti-check" style="color:#1D9E75"></i>Partage (lien direct)</div>
+      </div>
+    </div>
+
+    <div class="module">
+      <div class="module-head">
+        <div class="module-icon" style="background:#FBEAF0"><i class="ti ti-settings" style="color:#993556;font-size:15px" aria-hidden="true"></i></div>
+        <div><div class="module-title">M5 — Panel admin</div></div>
+        <div class="module-sub">rôle admin uniquement</div>
+      </div>
+      <div class="module-body">
+        <div class="feat"><i class="ti ti-check" style="color:#1D9E75"></i>File d'attente de validation (approuver/rejeter)</div>
+        <div class="feat"><i class="ti ti-check" style="color:#1D9E75"></i>Gestion des utilisateurs</div>
+        <div class="feat"><i class="ti ti-check" style="color:#1D9E75"></i>Dashboard stats (dépôts, domaines, vues)</div>
+        <div class="feat"><i class="ti ti-check" style="color:#1D9E75"></i>Gestion des catégories et domaines</div>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="panel" id="panel-devplan">
+    <div class="section-label">Timeline 7 heures</div>
+
+    <div class="phase">
+      <div class="phase-time">H0 → H0:30</div>
+      <div class="phase-content">
+        <div class="phase-title">Phase 0 — Scaffold & base de données</div>
+        <div class="phase-tasks">
+          <span class="task">React + Vite init</span>
+          <span class="task">FastAPI scaffold</span>
+          <span class="task">Schéma PostgreSQL</span>
+          <span class="task">Alembic migrations</span>
+          <span class="task">Structure dossiers</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="phase">
+      <div class="phase-time">H0:30 → H1:30</div>
+      <div class="phase-content">
+        <div class="phase-title">Phase 1 — Auth JWT + rôles</div>
+        <div class="phase-tasks">
+          <span class="task">Modèle User (SQLAlchemy)</span>
+          <span class="task">Endpoints register/login</span>
+          <span class="task">JWT middleware</span>
+          <span class="task">Pages Login/Register React</span>
+          <span class="task">RBAC guard</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="phase">
+      <div class="phase-time">H1:30 → H3:00</div>
+      <div class="phase-content">
+        <div class="phase-title">Phase 2 — Dépôt & stockage PDF</div>
+        <div class="phase-tasks">
+          <span class="task">Modèle Document</span>
+          <span class="task">Upload FastAPI (multipart)</span>
+          <span class="task">Extraction texte PDF</span>
+          <span class="task">Formulaire soumission React</span>
+          <span class="task">Statuts validation</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="phase">
+      <div class="phase-time">H3:00 → H4:30</div>
+      <div class="phase-content">
+        <div class="phase-title">Phase 3 — Recherche à facettes</div>
+        <div class="phase-tasks">
+          <span class="task">ts_vector PostgreSQL</span>
+          <span class="task">pg_trgm (fuzzy search)</span>
+          <span class="task">Endpoints filtrés</span>
+          <span class="task">Page résultats React</span>
+          <span class="task">Composant filtres sidebar</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="phase">
+      <div class="phase-time">H4:30 → H5:30</div>
+      <div class="phase-content">
+        <div class="phase-title">Phase 4 — Intégration Claude API <span style="font-size:10px;background:#E1F5EE;color:#0F6E56;border-radius:999px;padding:2px 7px;font-family:'DM Mono',monospace">BONUS +3pts</span></div>
+        <div class="phase-tasks">
+          <span class="task ai">Extraction métadonnées PDF</span>
+          <span class="task ai">Suggestion thématiques</span>
+          <span class="task ai">Pré-remplissage formulaire</span>
+          <span class="task risk">⚠ Tester sur 3 PDFs pilotes</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="phase">
+      <div class="phase-time">H5:30 → H6:15</div>
+      <div class="phase-content">
+        <div class="phase-title">Phase 5 — Lecteur PDF + page détail</div>
+        <div class="phase-tasks">
+          <span class="task">PDF.js viewer</span>
+          <span class="task">Page document complète</span>
+          <span class="task">Export BibTeX / APA</span>
+          <span class="task">Travaux similaires</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="phase">
+      <div class="phase-time">H6:15 → H7:00</div>
+      <div class="phase-content">
+        <div class="phase-title">Phase 6 — Landing page + démo finale</div>
+        <div class="phase-tasks">
+          <span class="task">Landing page complète</span>
+          <span class="task">Stats homepage</span>
+          <span class="task">Panel admin minimal</span>
+          <span class="task risk">⚠ Seed données démo</span>
+          <span class="task">Script démo 3 min</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="risk-card">
+      <b><i class="ti ti-alert-triangle" style="font-size:12px;margin-right:5px" aria-hidden="true"></i>Règle d'or — démo contrôlée</b>
+      Prépare 3 PDFs "propres" (natifs, pas scannés) à uploader pendant la démo. Ne laisse jamais un jury téléverser un PDF inconnu. L'IA retourne du bruit sur les PDFs scannés sans OCR.
+    </div>
+  </div>
+
+  <div class="panel" id="panel-stack">
+    <div class="section-label">Frontend</div>
+    <div class="stack-row">
+      <span class="stack-badge">React 18</span>
+      <span class="stack-badge">Vite</span>
+      <span class="stack-badge">React Router v6</span>
+      <span class="stack-badge">Tailwind CSS</span>
+      <span class="stack-badge">PDF.js</span>
+      <span class="stack-badge">Axios</span>
+    </div>
+
+    <div class="section-label" style="margin-top:16px">Backend</div>
+    <div class="stack-row">
+      <span class="stack-badge">FastAPI</span>
+      <span class="stack-badge">PostgreSQL 16</span>
+      <span class="stack-badge">SQLAlchemy 2</span>
+      <span class="stack-badge">Alembic</span>
+      <span class="stack-badge">python-jose (JWT)</span>
+      <span class="stack-badge">python-multipart</span>
+      <span class="stack-badge">pdfplumber</span>
+    </div>
+
+    <div class="section-label" style="margin-top:16px">IA — Bonus +3 pts</div>
+    <div class="stack-row">
+      <span class="stack-badge" style="background:#E1F5EE;border-color:#5DCAA5;color:#085041">Claude API (Sonnet)</span>
+      <span class="stack-badge" style="background:#E1F5EE;border-color:#5DCAA5;color:#085041">pdfplumber (extraction texte)</span>
+      <span class="stack-badge" style="background:#E1F5EE;border-color:#5DCAA5;color:#085041">JSON structured output</span>
+    </div>
+
+    <div class="section-label" style="margin-top:16px">Recherche</div>
+    <div class="stack-row">
+      <span class="stack-badge">ts_vector (full-text)</span>
+      <span class="stack-badge">pg_trgm (fuzzy)</span>
+      <span class="stack-badge">GIN index</span>
+    </div>
+
+    <div class="section-label" style="margin-top:16px">Déploiement</div>
+    <div class="stack-row">
+      <span class="stack-badge">Vercel (frontend)</span>
+      <span class="stack-badge">Render (backend)</span>
+      <span class="stack-badge">Supabase (PostgreSQL)</span>
+    </div>
+
+    <button onclick="sendPrompt('Génère le schéma SQL complet pour OpenScience Hub (tables : users, documents, domains, institutions)')" style="margin-top:16px;padding:8px 14px;font-size:12px;color:var(--color-text-secondary);background:transparent;border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-md);cursor:pointer">
+      Générer le schéma SQL ↗
+    </button>
+    <button onclick="sendPrompt('Montre-moi le prompt Claude API pour extraire les métadonnées d\'un PDF académique en JSON structuré')" style="margin-top:8px;margin-left:8px;padding:8px 14px;font-size:12px;color:#0F6E56;background:#E1F5EE;border:0.5px solid #5DCAA5;border-radius:var(--border-radius-md);cursor:pointer">
+      Prompt extraction IA ↗
+    </button>
+  </div>
+</div>
+
+<script>
+function switchTab(id, el) {
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.getElementById('panel-'+id).classList.add('active');
+  el.classList.add('active');
+}
+</script>
