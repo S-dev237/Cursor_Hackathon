@@ -1,0 +1,86 @@
+version: "3.9"
+
+services:
+  # ── PostgreSQL ──────────────────────────────────────────────────────
+  postgres:
+    image: postgres:16-alpine
+    container_name: acadoc_postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: acadoc
+      POSTGRES_PASSWORD: secret
+      POSTGRES_DB: acadoc
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U acadoc"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  # ── MinIO ───────────────────────────────────────────────────────────
+  minio:
+    image: minio/minio:latest
+    container_name: acadoc_minio
+    restart: unless-stopped
+    command: server /data --console-address ":9001"
+    environment:
+      MINIO_ROOT_USER: minioadmin
+      MINIO_ROOT_PASSWORD: minioadmin
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    volumes:
+      - minio_data:/data
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+
+  # ── Prolog HTTP server ──────────────────────────────────────────────
+  prolog:
+    build:
+      context: ./prolog
+      dockerfile: Dockerfile.prolog
+    container_name: acadoc_prolog
+    restart: unless-stopped
+    ports:
+      - "8081:8081"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8081/sante"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+
+  # ── FastAPI backend ─────────────────────────────────────────────────
+  api:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: acadoc_api
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+      minio:
+        condition: service_healthy
+    env_file:
+      - ./backend/.env
+    environment:
+      DATABASE_URL: postgresql+asyncpg://acadoc:secret@postgres:5432/acadoc
+      MINIO_ENDPOINT: minio:9000
+      PROLOG_URL: http://prolog:8081
+      LANCEDB_URI: /app/data/lancedb
+    ports:
+      - "8000:8000"
+    volumes:
+      - lancedb_data:/app/data/lancedb
+    command: uvicorn src.main:app --host 0.0.0.0 --port 8000
+
+volumes:
+  postgres_data:
+  minio_data:
+  lancedb_data:
