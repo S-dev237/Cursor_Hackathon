@@ -23,7 +23,8 @@ from src.modules.document.infrastructure.persistence.models import (
 # ── Classification ────────────────────────────────────────────────────────────
 from src.modules.classification.infrastructure.persistence.models import (
     ThematiqueModel, MotCleModel,
-    RessourceThematiqueModel, RessourceMotCleModel
+    RessourceThematiqueModel, RessourceMotCleModel,
+    DossierVirtuelModel, DocumentDossierModel,
 )
 
 # ── RAG ───────────────────────────────────────────────────────────────────────
@@ -291,6 +292,35 @@ class RessourceMotCleAdmin(ModelView, model=RessourceMotCleModel):
     column_list = [RessourceMotCleModel.ressource_id, RessourceMotCleModel.mot_cle_id]
 
 
+class DossierVirtuelAdmin(ModelView, model=DossierVirtuelModel):
+    name = "Dossier virtuel"
+    name_plural = "Dossiers virtuels"
+    icon = "fa-solid fa-folder-tree"
+    category = "Classification"
+
+    column_list = [
+        DossierVirtuelModel.id, DossierVirtuelModel.axe,
+        DossierVirtuelModel.code, DossierVirtuelModel.nom,
+    ]
+    column_searchable_list = [DossierVirtuelModel.nom, DossierVirtuelModel.code]
+    column_sortable_list = [DossierVirtuelModel.axe, DossierVirtuelModel.nom]
+    column_filters = [DossierVirtuelModel.axe]
+
+
+class DocumentDossierAdmin(ModelView, model=DocumentDossierModel):
+    name = "Document ↔ Dossier"
+    name_plural = "Rattachements multi-vues"
+    icon = "fa-solid fa-diagram-project"
+    category = "Classification"
+
+    column_list = [
+        DocumentDossierModel.ressource_id,
+        DocumentDossierModel.dossier_id,
+        DocumentDossierModel.origine,
+    ]
+    column_filters = [DocumentDossierModel.origine]
+
+
 # =============================================================================
 # RAG
 # =============================================================================
@@ -397,6 +427,8 @@ ALL_VIEWS = [
     MotCleAdmin,
     RessourceThematiqueAdmin,
     RessourceMotCleAdmin,
+    DossierVirtuelAdmin,
+    DocumentDossierAdmin,
     # RAG
     ChunkAdmin,
     # Usage

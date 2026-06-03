@@ -56,3 +56,43 @@ export interface ReponseRAG {
   reponse: string;
   sources: SourceRAG[];
 }
+
+// ── Organisation multi-vues (dossiers virtuels déduits par Prolog) ─────────
+export type AxeOrganisation =
+  | 'DISCIPLINE'
+  | 'DOMAINE'
+  | 'ANNEE'
+  | 'AUTEUR'
+  | 'LABORATOIRE';
+
+export interface Axe {
+  axe: AxeOrganisation | string;
+  libelle: string;
+  nb_dossiers: number;
+  nb_documents: number;
+}
+
+export interface DossierVirtuel {
+  id: string;
+  axe: string;
+  code: string;
+  nom: string;
+  nb_documents: number;
+}
+
+export interface DossierDetail {
+  id: string;
+  axe: string;
+  code: string;
+  nom: string;
+  ressources: Ressource[];
+}
+
+export interface DossierRessource {
+  id: string;
+  axe: string;
+  libelle_axe: string;
+  code: string;
+  nom: string;
+  origine: string;
+}

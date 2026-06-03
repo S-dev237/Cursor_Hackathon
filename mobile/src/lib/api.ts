@@ -7,6 +7,10 @@ import type {
   TypeUtilisateur,
   NiveauAcces,
   TypeDocument,
+  Axe,
+  DossierVirtuel,
+  DossierDetail,
+  DossierRessource,
 } from './types';
 
 export class ApiError extends Error {
@@ -157,6 +161,35 @@ export const api = {
     return request<ReponseRAG>('/rag/question', {
       method: 'POST',
       body: JSON.stringify({ question, nb_contextes: nbContextes }),
+    });
+  },
+
+  // ── Organisation multi-vues (dossiers virtuels Prolog) ────────────
+  listerAxes(): Promise<Axe[]> {
+    return request<Axe[]>('/classification/axes');
+  },
+
+  listerDossiers(axe: string): Promise<DossierVirtuel[]> {
+    return request<DossierVirtuel[]>(`/classification/axes/${axe}/dossiers`);
+  },
+
+  lireDossier(dossierId: string): Promise<DossierDetail> {
+    return request<DossierDetail>(`/classification/dossiers/${dossierId}`);
+  },
+
+  listerDossiersRessource(ressourceId: string): Promise<DossierRessource[]> {
+    return request<DossierRessource[]>(
+      `/classification/ressources/${ressourceId}/dossiers`,
+    );
+  },
+
+  organiserRessource(ressourceId: string): Promise<{
+    ressource_id: string;
+    mots_cles: string[];
+    dossiers: DossierRessource[];
+  }> {
+    return request(`/classification/ressources/${ressourceId}/organiser`, {
+      method: 'POST',
     });
   },
 };

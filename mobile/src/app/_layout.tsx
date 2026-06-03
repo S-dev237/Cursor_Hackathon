@@ -25,6 +25,7 @@ export default function RootLayout() {
               options={{ presentation: 'modal' }}
             />
             <Stack.Screen name="document/[id]" />
+            <Stack.Screen name="dossier/[id]" />
           </Stack>
         </AuthProvider>
       </SafeAreaProvider>

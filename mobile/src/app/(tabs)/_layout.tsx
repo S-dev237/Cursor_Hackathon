@@ -48,6 +48,15 @@ export default function TabsLayout() {
         }}
       />
       <Tabs.Screen
+        name="explorer"
+        options={{
+          title: 'Explorer',
+          tabBarIcon: ({ color, size }) => (
+            <Ionicons name="git-network" size={size} color={color} />
+          ),
+        }}
+      />
+      <Tabs.Screen
         name="assistant"
         options={{
           title: 'Assistant',

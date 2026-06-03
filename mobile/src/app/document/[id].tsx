@@ -25,7 +25,7 @@ import {
   accesColor,
   formatTaille,
 } from '../../lib/format';
-import type { Fichier, Ressource } from '../../lib/types';
+import type { DossierRessource, Fichier, Ressource } from '../../lib/types';
 
 type Tab = 'read' | 'chat';
 
@@ -35,6 +35,7 @@ export default function DocumentDetail() {
   const { user } = useAuth();
   const [ressource, setRessource] = useState<Ressource | null>(null);
   const [fichiers, setFichiers] = useState<Fichier[]>([]);
+  const [dossiers, setDossiers] = useState<DossierRessource[]>([]);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<Tab>(tab === 'chat' ? 'chat' : 'read');
 
@@ -42,12 +43,14 @@ export default function DocumentDetail() {
     if (!id) return;
     setLoading(true);
     try {
-      const [r, f] = await Promise.all([
+      const [r, f, d] = await Promise.all([
         api.lireRessource(id),
         api.listerFichiers(id).catch(() => []),
+        api.listerDossiersRessource(id).catch(() => []),
       ]);
       setRessource(r);
       setFichiers(f);
+      setDossiers(d);
     } finally {
       setLoading(false);
     }
@@ -106,6 +109,47 @@ export default function DocumentDetail() {
               <Text style={styles.desc}>{ressource.description}</Text>
             ) : null}
           </View>
+
+          {/* Classements automatiques (dossiers virtuels Prolog) */}
+          {dossiers.length > 0 ? (
+            <View style={styles.classementCard}>
+              <View style={styles.classementHead}>
+                <Ionicons name="git-network" size={16} color={colors.primary} />
+                <Text style={styles.classementTitle}>Classements automatiques</Text>
+              </View>
+              {Object.entries(
+                dossiers.reduce<Record<string, DossierRessource[]>>((acc, d) => {
+                  (acc[d.libelle_axe] ??= []).push(d);
+                  return acc;
+                }, {}),
+              ).map(([axe, items]) => (
+                <View key={axe} style={styles.axeBlock}>
+                  <Text style={styles.axeLabel}>{axe}</Text>
+                  <View style={styles.axeChips}>
+                    {items.map((d) => (
+                      <Pressable
+                        key={d.id}
+                        style={styles.dossierChip}
+                        onPress={() =>
+                          router.push({
+                            pathname: '/dossier/[id]',
+                            params: { id: d.id, nom: d.nom },
+                          })
+                        }
+                      >
+                        <Text style={styles.dossierChipText}>{d.nom}</Text>
+                        <Ionicons
+                          name="chevron-forward"
+                          size={12}
+                          color={colors.primary}
+                        />
+                      </Pressable>
+                    ))}
+                  </View>
+                </View>
+              ))}
+            </View>
+          ) : null}
 
           {/* Onglets */}
           <View style={styles.tabs}>
@@ -249,6 +293,52 @@ const styles = StyleSheet.create({
     fontSize: font.size.sm,
     color: colors.textMuted,
     lineHeight: 20,
+  },
+  classementCard: {
+    backgroundColor: colors.white,
+    paddingHorizontal: spacing.lg,
+    paddingBottom: spacing.md,
+    gap: spacing.sm,
+  },
+  classementHead: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.xs,
+  },
+  classementTitle: {
+    fontSize: font.size.sm,
+    fontWeight: font.weight.semibold,
+    color: colors.text,
+  },
+  axeBlock: {
+    gap: spacing.xs,
+  },
+  axeLabel: {
+    fontSize: font.size.xs,
+    fontWeight: font.weight.medium,
+    color: colors.textFaint,
+    textTransform: 'uppercase',
+  },
+  axeChips: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: spacing.xs,
+  },
+  dossierChip: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    paddingHorizontal: spacing.md,
+    paddingVertical: 6,
+    borderRadius: radius.pill,
+    backgroundColor: colors.primarySurface,
+    borderWidth: 1,
+    borderColor: colors.primaryLight,
+  },
+  dossierChipText: {
+    fontSize: font.size.xs,
+    fontWeight: font.weight.semibold,
+    color: colors.primaryDark,
   },
   tabs: {
     flexDirection: 'row',

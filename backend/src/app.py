@@ -64,6 +64,12 @@ async def lifespan(app: FastAPI):
     from src.modules.rag.infrastructure.listeners.fichier_ajoute_listener import FichierAjouteRAGListener
     bus.subscribe(FichierAjouteEvent, FichierAjouteRAGListener(async_session_factory))
 
+    # Organisation multi-vues (dossiers virtuels déduits par Prolog)
+    from src.modules.classification.infrastructure.listeners.ressource_organisation_listener import (
+        RessourceCreeOrganisationListener,
+    )
+    bus.subscribe(RessourceCreeEvent, RessourceCreeOrganisationListener(async_session_factory))
+
     yield
     # ── Arrêt ──────────────────────────────────────────────────────────
 
