@@ -1,6 +1,6 @@
 <mxfile host="65bd71144e">
     <diagram id="package-diagram" name="Architecture Packages">
-        <mxGraphModel dx="2486" dy="1734" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1400" pageHeight="1000" math="0" shadow="1">
+        <mxGraphModel dx="2486" dy="1734" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1400" pageHeight="1000" background="#ffffff" math="0" shadow="1">
             <root>
                 <mxCell id="0"/>
                 <mxCell id="1" parent="0"/>
@@ -105,12 +105,6 @@
                         <mxPoint x="350" y="480" as="sourcePoint"/>
                         <mxPoint x="150" y="220" as="targetPoint"/>
                     </mxGeometry>
-                </mxCell>
-                <mxCell id="title" value="Architecture UML - Système de Gestion Documentaire Universitaire" style="text;html=1;align=center;verticalAlign=middle;fontSize=16;fontStyle=1;fontColor=#333333;" parent="1" vertex="1">
-                    <mxGeometry y="650" width="1200" height="30" as="geometry"/>
-                </mxCell>
-                <mxCell id="legend" value="Légende: Les flèches en pointillés indiquent les dépendances entre packages" style="text;html=1;align=center;verticalAlign=middle;fontSize=12;fontColor=#666666;" parent="1" vertex="1">
-                    <mxGeometry y="690" width="1200" height="25" as="geometry"/>
                 </mxCell>
             </root>
         </mxGraphModel>
