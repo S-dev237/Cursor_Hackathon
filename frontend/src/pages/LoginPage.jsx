@@ -6,31 +6,14 @@ import Logo from '../components/ui/Logo.jsx'
 import Spinner from '../components/ui/Spinner.jsx'
 import PasswordInput from '../components/ui/PasswordInput.jsx'
 
-const MOCK_MODE = import.meta.env.VITE_MOCK_API === 'true'
-
-const DEMO_ACCOUNTS = [
-  {
-    label: 'Admin',
-    email: 'admin@openscience.cm',
-    password: 'demo',
-    hint: 'Accès tableau de bord /admin',
-  },
-  {
-    label: 'Étudiant',
-    email: 'demo@etudiant.cm',
-    password: 'demo',
-    hint: 'Soumissions + soumettre',
-  },
-]
-
 export default function LoginPage() {
   const { login } = useAuth()
   const navigate = useNavigate()
   const location = useLocation()
   const from = location.state?.from || '/'
 
-  const [email, setEmail] = useState(MOCK_MODE ? DEMO_ACCOUNTS[0].email : '')
-  const [password, setPassword] = useState(MOCK_MODE ? DEMO_ACCOUNTS[0].password : '')
+  const [email, setEmail] = useState('')
+  const [password, setPassword] = useState('')
   const [error, setError] = useState(null)
   const [submitting, setSubmitting] = useState(false)
 
@@ -47,20 +30,6 @@ export default function LoginPage() {
     navigate(from, { replace: true })
   }
 
-  const quickLogin = async (account) => {
-    setEmail(account.email)
-    setPassword(account.password)
-    setError(null)
-    setSubmitting(true)
-    const { error: loginError } = await login(account.email, account.password)
-    setSubmitting(false)
-    if (loginError) {
-      setError(loginError)
-      return
-    }
-    navigate(account.label === 'Admin' ? '/admin' : from, { replace: true })
-  }
-
   return (
     <div className="page-shell flex min-h-dvh flex-col">
       <Navbar />
@@ -75,37 +44,6 @@ export default function LoginPage() {
               Connectez-vous pour suivre vos soumissions et déposer vos travaux.
             </p>
           </div>
-
-          {MOCK_MODE && (
-            <div className="mb-6 rounded-xl border border-teal-300/40 bg-teal-50/70 p-4 dark:border-teal-500/30 dark:bg-teal-500/10">
-              <div className="mb-3 flex items-center gap-2">
-                <span className="h-1.5 w-1.5 rounded-full bg-teal-500" />
-                <p className="section-label text-teal-700 dark:text-teal-300">
-                  Comptes de démonstration
-                </p>
-              </div>
-              <div className="flex flex-col gap-2 sm:flex-row">
-                {DEMO_ACCOUNTS.map((acc) => (
-                  <button
-                    key={acc.label}
-                    type="button"
-                    disabled={submitting}
-                    onClick={() => quickLogin(acc)}
-                    className="flex-1 rounded-lg border border-teal-200 bg-white px-3 py-2.5 text-left transition-[border-color,box-shadow,transform] duration-200 ease-premium hover:border-teal-400 hover:shadow-teal active:scale-[0.99] disabled:opacity-50 dark:border-teal-500/30 dark:bg-navy-800"
-                  >
-                    <span className="block text-sm font-medium text-gray-900 dark:text-gray-100">{acc.label}</span>
-                    <span className="mt-0.5 block font-mono text-[10px] text-gray-500 dark:text-gray-400">
-                      {acc.email}
-                    </span>
-                    <span className="mt-1 block text-[11px] leading-snug text-teal-600 dark:text-teal-400">{acc.hint}</span>
-                  </button>
-                ))}
-              </div>
-              <p className="mt-2.5 font-mono text-[10px] text-gray-500 dark:text-gray-400">
-                Mot de passe&nbsp;: <span className="text-gray-700 dark:text-gray-300">demo</span>
-              </p>
-            </div>
-          )}
 
           <form
             onSubmit={handleSubmit}
@@ -149,12 +87,6 @@ export default function LoginPage() {
                 <label className="text-sm font-medium text-gray-900 dark:text-gray-100" htmlFor="login-password">
                   Mot de passe
                 </label>
-                <Link
-                  to="/login"
-                  className="text-xs font-medium text-teal hover:text-teal-dark dark:text-teal-400 dark:hover:text-teal-300"
-                >
-                  Mot de passe oublié&nbsp;?
-                </Link>
               </div>
               <PasswordInput
                 id="login-password"

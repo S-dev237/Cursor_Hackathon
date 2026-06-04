@@ -48,7 +48,7 @@ services:
     container_name: acadoc_prolog
     restart: unless-stopped
     ports:
-      - "8081:8081"
+      - "8083:8081"
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8081/sante"]
       interval: 10s

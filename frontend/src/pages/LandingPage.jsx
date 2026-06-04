@@ -52,7 +52,7 @@ function StatItem({ value, label, isLast = false }) {
         !isLast && 'border-r border-white/[0.08]',
       )}
     >
-      <div className="font-serif text-[28px] font-semibold tabular-nums text-teal-300">
+      <div className="font-serif text-[30px] font-semibold tabular-nums text-teal-300 sm:text-[34px]">
         <AnimatedCounter value={value} duration={1.5} />
       </div>
       <div className="mt-1 font-mono text-[10px] uppercase tracking-[0.12em] text-white/45">
@@ -182,7 +182,7 @@ export default function LandingPage() {
             custom={1}
             initial="hidden"
             animate="visible"
-            className="mt-7 font-serif text-[2.625rem] font-semibold leading-[1.1] tracking-[-0.02em] text-white sm:text-[3.25rem]"
+            className="mt-7 font-serif text-[2.625rem] font-semibold leading-[1.05] tracking-[-0.025em] text-white sm:text-[3.25rem] lg:text-[3.75rem]"
           >
             Le répertoire ouvert des travaux
             <br />

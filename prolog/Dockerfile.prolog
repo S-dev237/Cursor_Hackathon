@@ -1,4 +1,4 @@
-FROM swipl:9.2
+FROM swipl:latest
 
 WORKDIR /app
 COPY acadoc.pl .

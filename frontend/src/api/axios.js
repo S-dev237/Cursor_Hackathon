@@ -1,7 +1,8 @@
 import axios from 'axios'
 import { STORAGE_KEYS } from '../constants/colors.js'
+import { isMockMode } from '../mocks/mockApi.js'
 
-const baseURL = import.meta.env.VITE_API_URL || 'http://localhost:8000/api/v1'
+const baseURL = import.meta.env.VITE_API_URL || 'http://localhost:8000'
 
 const api = axios.create({
   baseURL,
@@ -17,13 +18,11 @@ api.interceptors.request.use((config) => {
   return config
 })
 
-// RESPONSE: si 401 → supprime token + redirige vers /login.
-// Les appels « mock » ne passent pas par axios : un 401 provient donc
-// toujours d'un véritable appel authentifié au backend.
+// RESPONSE: si 401 → supprime token + redirige vers /login (sauf mode mock)
 api.interceptors.response.use(
   (response) => response,
   (error) => {
-    if (error.response?.status === 401) {
+    if (error.response?.status === 401 && !isMockMode()) {
       localStorage.removeItem(STORAGE_KEYS.token)
       localStorage.removeItem(STORAGE_KEYS.user)
       if (!window.location.pathname.startsWith('/login')) {

@@ -1,17 +1,18 @@
 import api from './axios.js'
-
-// L'authentification est toujours servie par le backend réel (module IAM),
-// même lorsque le reste de l'application tourne en mode démo (mock).
+import {
+  isMockMode,
+  mockGetMe,
+  mockLogin,
+  mockRegister,
+  mockUpdateMe,
+} from '../mocks/mockApi.js'
 
 function toError(err) {
-  const detail = err.response?.data?.detail
-  if (Array.isArray(detail)) {
-    return detail.map((d) => d.msg ?? JSON.stringify(d)).join(', ')
-  }
-  return detail || 'Erreur réseau'
+  return err.response?.data?.detail || 'Erreur réseau'
 }
 
 export async function login(email, password) {
+  if (isMockMode()) return mockLogin(email, password)
   try {
     const { data } = await api.post('/auth/login', { email, password })
     return { data, error: null }
@@ -21,6 +22,7 @@ export async function login(email, password) {
 }
 
 export async function register(payload) {
+  if (isMockMode()) return mockRegister(payload)
   try {
     const { data } = await api.post('/auth/register', payload)
     return { data, error: null }
@@ -30,6 +32,7 @@ export async function register(payload) {
 }
 
 export async function getMe() {
+  if (isMockMode()) return mockGetMe()
   try {
     const { data } = await api.get('/auth/me')
     return { data, error: null }
@@ -39,6 +42,7 @@ export async function getMe() {
 }
 
 export async function updateMe(payload) {
+  if (isMockMode()) return mockUpdateMe(payload)
   try {
     const { data } = await api.put('/auth/me', payload)
     return { data, error: null }

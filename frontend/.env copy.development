@@ -1,0 +1,10 @@
+# Activé automatiquement avec `npm run dev` (mode development)
+VITE_MOCK_API=true
+VITE_API_URL=http://localhost:8000
+
+# OpenScience AI : la clé Groq et les réglages se mettent UNIQUEMENT dans .env.local
+# (non commité). Ne PAS les déclarer ici : .env.development a une priorité Vite
+# supérieure à .env.local et écraserait la clé. Le modèle a un défaut côté code
+# (llama-3.3-70b-versatile) si VITE_GROQ_MODEL n'est pas fourni.
+#   VITE_GROQ_API_KEY=gsk_...
+#   VITE_GROQ_MODEL=llama-3.3-70b-versatile

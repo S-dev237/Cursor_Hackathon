@@ -39,6 +39,20 @@ export const DOC_TYPE_LABELS = {
 
 export const DOC_TYPES = ['thesis', 'memoir', 'article', 'report']
 
+// Identité visuelle par domaine (accent + descripteur court).
+// Clé = slug du domaine. `fallback` couvre tout domaine hors liste.
+export const DOMAIN_META = {
+  informatique: { accent: '#3B82F6', tagline: 'IA, algorithmes & génie logiciel' },
+  mathematiques: { accent: '#8B5CF6', tagline: 'Algèbre, analyse & probabilités' },
+  'genie-civil': { accent: '#D97706', tagline: 'Structures, matériaux & BTP' },
+  'sciences-biologiques': { accent: '#10B981', tagline: 'Biologie, écologie & génétique' },
+  'economie-gestion': { accent: '#0D9488', tagline: 'Marchés, finance & management' },
+  droit: { accent: '#BE5985', tagline: 'Droit public, privé & international' },
+  medecine: { accent: '#EF4444', tagline: 'Santé publique & sciences cliniques' },
+  physique: { accent: '#6366F1', tagline: 'Matière, énergie & optique' },
+  fallback: { accent: '#1D9E75', tagline: 'Travaux académiques du domaine' },
+}
+
 /** @typedef {'draft'|'published'|'withdrawn'} DocStatus */
 
 // Statuts de publication (auto-publication par l'auteur)

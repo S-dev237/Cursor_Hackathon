@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 import { Document, Page, pdfjs } from 'react-pdf'
 import clsx from 'clsx'
 import 'react-pdf/dist/Page/AnnotationLayer.css'
@@ -50,9 +50,14 @@ export default function PdfViewer({ fileUrl, httpHeaders, onDownload }) {
 
   const scale = ZOOM_LEVELS[zoomIdx]
 
-  const file = fileUrl
-    ? { url: fileUrl, httpHeaders, withCredentials: false }
-    : null
+  // Mémoïsé : react-pdf compare le prop `file` en profondeur et recharge le
+  // document à chaque nouvel objet. On stabilise la référence sur l'URL + headers.
+  const headersKey = httpHeaders ? JSON.stringify(httpHeaders) : ''
+  const file = useMemo(
+    () => (fileUrl ? { url: fileUrl, httpHeaders, withCredentials: false } : null),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [fileUrl, headersKey],
+  )
 
   return (
     <div className="pdf-chrome flex flex-col overflow-hidden rounded-xl border border-white/[0.06] shadow-navy">
