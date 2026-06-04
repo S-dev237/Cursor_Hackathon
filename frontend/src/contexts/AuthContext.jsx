@@ -82,6 +82,24 @@ export function AuthProvider({ children }) {
     persist(null, null)
   }, [persist])
 
+  // Applique un utilisateur déjà connu (ex. après mise à jour du profil)
+  const updateUser = useCallback(
+    (nextUser) => {
+      if (nextUser) persist(token, nextUser)
+    },
+    [persist, token],
+  )
+
+  // Recharge l'utilisateur depuis l'API (/auth/me) et re-persiste
+  const refreshUser = useCallback(async () => {
+    const { data, error } = await authApi.getMe()
+    if (data && !error) {
+      persist(token, data)
+      return data
+    }
+    return null
+  }, [persist, token])
+
   const value = {
     user,
     token,
@@ -91,6 +109,8 @@ export function AuthProvider({ children }) {
     login,
     register,
     logout,
+    updateUser,
+    refreshUser,
   }
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>

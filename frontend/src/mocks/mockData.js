@@ -36,6 +36,55 @@ export const MOCK_USERS = {
   },
 }
 
+/** Liste d'utilisateurs pour le tableau de bord admin (gestion en mémoire). */
+export const MOCK_USER_LIST = [
+  {
+    id: 'usr-admin',
+    email: 'admin@openscience.cm',
+    full_name: 'Administrateur OpenScience',
+    role: 'admin',
+    institution_id: 'ins-1',
+    is_active: true,
+    created_at: '2026-01-10T08:00:00Z',
+  },
+  {
+    id: 'usr-demo',
+    email: 'demo@etudiant.cm',
+    full_name: 'Marie Kouassi',
+    role: 'student',
+    institution_id: 'ins-2',
+    is_active: true,
+    created_at: '2026-02-15T08:00:00Z',
+  },
+  {
+    id: 'usr-paul',
+    email: 'paul@demo.cm',
+    full_name: 'Paul Atangana',
+    role: 'student',
+    institution_id: 'ins-2',
+    is_active: true,
+    created_at: '2026-03-02T08:00:00Z',
+  },
+  {
+    id: 'usr-ibrahim',
+    email: 'ibrahim@demo.cm',
+    full_name: 'Ibrahim Sani',
+    role: 'student',
+    institution_id: 'ins-1',
+    is_active: false,
+    created_at: '2026-03-20T08:00:00Z',
+  },
+  {
+    id: 'usr-aicha',
+    email: 'aicha.mendy@demo.cm',
+    full_name: 'Dr. Aïcha Mendy',
+    role: 'admin',
+    institution_id: 'ins-1',
+    is_active: true,
+    created_at: '2026-04-01T08:00:00Z',
+  },
+]
+
 /** PDF public pour le lecteur (pas de backend requis). */
 export const MOCK_SAMPLE_PDF_URL =
   'https://mozilla.github.io/pdf.js/web/compressed.tracemonkey-pldi-09.pdf'
@@ -64,7 +113,7 @@ export const INITIAL_DOCUMENTS = [
     abstract:
       'Cette thèse explore l\'application des réseaux de neurones convolutifs pour la classification des cultures à partir d\'images satellite Sentinel-2.',
     doc_type: 'thesis',
-    status: 'approved',
+    status: 'published',
     authors: ['Jean-Baptiste Nkomo', 'Dr. Aïcha Mendy'],
     keywords: ['machine learning', 'télédétection', 'agriculture'],
     publication_year: 2025,
@@ -83,7 +132,7 @@ export const INITIAL_DOCUMENTS = [
     abstract:
       'Analyse numérique des structures de ponts soumises à des sollicitations sismiques en contexte tropical.',
     doc_type: 'memoir',
-    status: 'approved',
+    status: 'published',
     authors: ['Fatou Diallo'],
     keywords: ['génie civil', 'sismique', 'simulation'],
     publication_year: 2024,
@@ -99,7 +148,7 @@ export const INITIAL_DOCUMENTS = [
     abstract:
       'Revue systématique et analyse spatiale des données épidémiologiques sur les MTN dans la région CEMAC.',
     doc_type: 'article',
-    status: 'approved',
+    status: 'published',
     authors: ['Dr. Samuel Ewodo', 'Claire Nguefack'],
     keywords: ['épidémiologie', 'santé publique', 'Afrique'],
     publication_year: 2025,
@@ -117,7 +166,7 @@ export const INITIAL_DOCUMENTS = [
     abstract:
       'Étude empirique sur l\'accès au crédit des petites entreprises dans les zones urbaines camerounaises.',
     doc_type: 'memoir',
-    status: 'approved',
+    status: 'published',
     authors: ['Patrick Abega'],
     keywords: ['microfinance', 'PME', 'économie'],
     publication_year: 2023,
@@ -133,7 +182,7 @@ export const INITIAL_DOCUMENTS = [
     abstract:
       'Proposition d\'un modèle de simulation thermique adapté aux climats équatoriaux humides.',
     doc_type: 'report',
-    status: 'approved',
+    status: 'published',
     authors: ['Équipe Labo Énergie ENSPY'],
     keywords: ['énergie', 'bâtiment', 'durabilité'],
     publication_year: 2025,
@@ -149,7 +198,7 @@ export const INITIAL_DOCUMENTS = [
     abstract:
       'Caractérisation expérimentale et modélisation théorique des propriétés optiques de matériaux 2D.',
     doc_type: 'thesis',
-    status: 'approved',
+    status: 'published',
     authors: ['Dr. Henri Mvondo'],
     keywords: ['physique', 'nanomatériaux', 'optique'],
     publication_year: 2024,
@@ -159,14 +208,14 @@ export const INITIAL_DOCUMENTS = [
     download_count: 55,
     created_at: '2026-02-14T12:00:00Z',
   }),
-  // —— File admin (pending) ——
+  // —— Brouillons d'autres auteurs (non publiés) ——
   doc({
     id: 'doc-p1',
     title: 'Système de recommandation pour bibliothèques universitaires',
     abstract:
       'Conception d\'un moteur de recommandation hybride basé sur le contenu et le comportement utilisateur.',
     doc_type: 'memoir',
-    status: 'pending',
+    status: 'draft',
     authors: ['Marie Kouassi'],
     keywords: ['recommandation', 'NLP', 'bibliothèque'],
     publication_year: 2026,
@@ -182,7 +231,7 @@ export const INITIAL_DOCUMENTS = [
     title: 'Analyse juridique du cadre légal de l\'open data au Cameroun',
     abstract: 'Étude comparative des législations sur la transparence des données publiques.',
     doc_type: 'memoir',
-    status: 'pending',
+    status: 'draft',
     authors: ['Paul Atangana'],
     keywords: ['droit', 'open data', 'gouvernance'],
     publication_year: 2026,
@@ -197,7 +246,7 @@ export const INITIAL_DOCUMENTS = [
     title: 'Algorithmes génétiques pour l\'optimisation de réseaux de transport',
     abstract: 'Application des metaheuristiques à la planification urbaine de Yaoundé.',
     doc_type: 'thesis',
-    status: 'pending',
+    status: 'draft',
     authors: ['Ibrahim Sani', 'Prof. M. Tchinda'],
     keywords: ['algorithmes génétiques', 'transport', 'optimisation'],
     publication_year: 2025,
@@ -214,7 +263,7 @@ export const INITIAL_DOCUMENTS = [
     title: 'Système de recommandation pour bibliothèques universitaires',
     abstract: 'Conception d\'un moteur de recommandation hybride.',
     doc_type: 'memoir',
-    status: 'pending',
+    status: 'draft',
     authors: ['Marie Kouassi'],
     keywords: ['recommandation', 'NLP'],
     publication_year: 2026,
@@ -230,7 +279,7 @@ export const INITIAL_DOCUMENTS = [
     title: 'Classification automatique de documents PDF académiques',
     abstract: 'Pipeline ML pour catégoriser thèses et articles.',
     doc_type: 'memoir',
-    status: 'approved',
+    status: 'published',
     authors: ['Marie Kouassi'],
     keywords: ['classification', 'PDF', 'NLP'],
     publication_year: 2025,
@@ -245,17 +294,16 @@ export const INITIAL_DOCUMENTS = [
   }),
   doc({
     id: 'doc-m3',
-    title: 'Projet de mémoire — version préliminaire rejetée',
-    abstract: 'Brouillon incomplet soumis par erreur.',
+    title: 'Projet de mémoire — version préliminaire retirée',
+    abstract: 'Première version retirée par l\'auteur pour révision.',
     doc_type: 'memoir',
-    status: 'rejected',
+    status: 'withdrawn',
     authors: ['Marie Kouassi'],
     keywords: ['brouillon'],
     publication_year: 2026,
     domain_id: 'dom-1',
     institution_id: 'ins-2',
     submitter_email: 'demo@etudiant.cm',
-    rejection_reason: 'Document incomplet — résumé et métadonnées manquants.',
     created_at: '2026-03-10T08:00:00Z',
   }),
 ]

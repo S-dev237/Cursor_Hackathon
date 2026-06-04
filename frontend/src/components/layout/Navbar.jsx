@@ -1,9 +1,10 @@
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { Link, NavLink, useNavigate } from 'react-router-dom'
 import clsx from 'clsx'
 import { useAuth } from '../../hooks/useAuth.js'
 import useScrollPosition from '../../hooks/useScrollPosition.js'
 import Logo from '../ui/Logo.jsx'
+import ThemeToggle from '../ui/ThemeToggle.jsx'
 
 function initials(name = '') {
   return name
@@ -25,6 +26,8 @@ export default function Navbar() {
   const navigate = useNavigate()
   const scrolled = useScrollPosition()
   const [mobileOpen, setMobileOpen] = useState(false)
+  const [menuOpen, setMenuOpen] = useState(false)
+  const menuRef = useRef(null)
 
   const linkClass = ({ isActive }) =>
     clsx(
@@ -32,9 +35,28 @@ export default function Navbar() {
       isActive ? 'text-white' : 'text-white/60 hover:text-white',
     )
 
+  useEffect(() => {
+    if (!menuOpen) return undefined
+    const onClick = (e) => {
+      if (menuRef.current && !menuRef.current.contains(e.target)) {
+        setMenuOpen(false)
+      }
+    }
+    const onKey = (e) => {
+      if (e.key === 'Escape') setMenuOpen(false)
+    }
+    document.addEventListener('mousedown', onClick)
+    document.addEventListener('keydown', onKey)
+    return () => {
+      document.removeEventListener('mousedown', onClick)
+      document.removeEventListener('keydown', onKey)
+    }
+  }, [menuOpen])
+
   const handleLogout = () => {
     logout()
     navigate('/')
+    setMenuOpen(false)
     setMobileOpen(false)
   }
 
@@ -56,12 +78,13 @@ export default function Navbar() {
           ))}
         </nav>
 
-        <div className="ml-auto flex items-center gap-3">
+        <div className="ml-auto flex items-center gap-2 sm:gap-3">
+          <ThemeToggle variant="nav" />
           {user ? (
             <>
               {isAdmin && (
                 <Link
-                  to="/admin/queue"
+                  to="/admin"
                   className="hidden rounded-full border border-red-200/30 bg-red-500/10 px-2.5 py-1 font-mono text-[10px] font-semibold uppercase tracking-wider text-red-300 transition-colors duration-200 hover:bg-red-500/20 sm:inline-flex"
                 >
                   Admin
@@ -73,10 +96,14 @@ export default function Navbar() {
               >
                 Soumettre
               </Link>
-              <div className="group relative">
+              <div className="relative" ref={menuRef}>
                 <button
                   type="button"
-                  className="flex items-center gap-2 text-sm text-white/90 transition-colors duration-200 hover:text-white"
+                  onClick={() => setMenuOpen((o) => !o)}
+                  aria-haspopup="menu"
+                  aria-expanded={menuOpen}
+                  aria-label="Menu utilisateur"
+                  className="flex items-center gap-2 rounded-lg text-sm text-white/90 transition-colors duration-200 hover:text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-400/60"
                 >
                   <span className="gradient-teal-avatar flex h-7 w-7 items-center justify-center rounded-full font-mono text-[11px] font-medium text-white shadow-sm">
                     {initials(user.full_name)}
@@ -85,23 +112,47 @@ export default function Navbar() {
                     {user.full_name?.split(' ')[0]}
                   </span>
                 </button>
-                <div className="invisible absolute right-0 top-full z-50 w-48 pt-2 opacity-0 transition-all duration-200 group-hover:visible group-hover:opacity-100">
-                  <div className="overflow-hidden rounded-xl border border-gray-200/60 bg-white py-1 shadow-card-hover">
+                {menuOpen && (
+                  <div
+                    role="menu"
+                    className="absolute right-0 top-full z-50 mt-2 w-48 overflow-hidden rounded-xl border border-gray-200/60 bg-white py-1 shadow-card-hover dark:border-navy-700 dark:bg-navy-800"
+                  >
+                    <Link
+                      to="/profile"
+                      role="menuitem"
+                      onClick={() => setMenuOpen(false)}
+                      className="block px-3.5 py-2.5 text-sm text-gray-900 transition-colors duration-200 hover:bg-gray-50 dark:text-gray-100 dark:hover:bg-navy-700"
+                    >
+                      Mon profil
+                    </Link>
                     <Link
                       to="/my-submissions"
-                      className="block px-3.5 py-2.5 text-sm text-gray-900 transition-colors duration-200 hover:bg-gray-50"
+                      role="menuitem"
+                      onClick={() => setMenuOpen(false)}
+                      className="block px-3.5 py-2.5 text-sm text-gray-900 transition-colors duration-200 hover:bg-gray-50 dark:text-gray-100 dark:hover:bg-navy-700"
                     >
                       Mes soumissions
                     </Link>
+                    {isAdmin && (
+                      <Link
+                        to="/admin"
+                        role="menuitem"
+                        onClick={() => setMenuOpen(false)}
+                        className="block px-3.5 py-2.5 text-sm text-gray-900 transition-colors duration-200 hover:bg-gray-50 dark:text-gray-100 dark:hover:bg-navy-700"
+                      >
+                        Administration
+                      </Link>
+                    )}
                     <button
                       type="button"
+                      role="menuitem"
                       onClick={handleLogout}
-                      className="block w-full px-3.5 py-2.5 text-left text-sm text-red-700 transition-colors duration-200 hover:bg-red-50"
+                      className="block w-full px-3.5 py-2.5 text-left text-sm text-red-700 transition-colors duration-200 hover:bg-red-50 dark:text-red-300 dark:hover:bg-red-500/10"
                     >
                       Déconnexion
                     </button>
                   </div>
-                </div>
+                )}
               </div>
             </>
           ) : (
@@ -158,7 +209,7 @@ export default function Navbar() {
             ))}
             {isAdmin && user && (
               <Link
-                to="/admin/queue"
+                to="/admin"
                 className="block rounded-lg px-3 py-2.5 font-mono text-xs uppercase tracking-wider text-red-300 hover:bg-white/5"
                 onClick={() => setMobileOpen(false)}
               >

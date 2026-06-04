@@ -16,6 +16,10 @@ class UtilisateurMapper:
             _actif=model.actif,
             _nom=model.nom,
             _prenom=model.prenom,
+            _nom_complet=model.nom_complet,
+            _institution_id=model.institution_id,
+            _cree_le=model.cree_le,
+            _derniere_connexion=model.derniere_connexion,
         )
 
     @staticmethod
@@ -28,4 +32,8 @@ class UtilisateurMapper:
             actif=domain.actif,
             nom=domain.nom,
             prenom=domain.prenom,
+            nom_complet=domain.nom_complet,
+            institution_id=domain.institution_id,
+            cree_le=domain.cree_le,
+            derniere_connexion=domain.derniere_connexion,
         )

@@ -31,7 +31,7 @@ export default function Pagination({ page, total, perPage, onChange }) {
         type="button"
         onClick={() => go(page - 1)}
         disabled={page === 1}
-        className={`${btn} border-gray-border bg-white text-gray-text hover:border-teal-mid disabled:opacity-40`}
+        className={`${btn} border-gray-border bg-white text-gray-text hover:border-teal-mid disabled:opacity-40 dark:border-navy-700 dark:bg-navy-800 dark:text-gray-200 dark:hover:border-teal-500/40`}
       >
         ‹
       </button>
@@ -50,7 +50,7 @@ export default function Pagination({ page, total, perPage, onChange }) {
             className={`${btn} ${
               p === page
                 ? 'border-teal bg-teal text-white'
-                : 'border-gray-border bg-white text-gray-text hover:border-teal-mid'
+                : 'border-gray-border bg-white text-gray-text hover:border-teal-mid dark:border-navy-700 dark:bg-navy-800 dark:text-gray-200 dark:hover:border-teal-500/40'
             }`}
           >
             {p}
@@ -62,7 +62,7 @@ export default function Pagination({ page, total, perPage, onChange }) {
         type="button"
         onClick={() => go(page + 1)}
         disabled={page === totalPages}
-        className={`${btn} border-gray-border bg-white text-gray-text hover:border-teal-mid disabled:opacity-40`}
+        className={`${btn} border-gray-border bg-white text-gray-text hover:border-teal-mid disabled:opacity-40 dark:border-navy-700 dark:bg-navy-800 dark:text-gray-200 dark:hover:border-teal-500/40`}
       >
         ›
       </button>

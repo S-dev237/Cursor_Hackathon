@@ -1,10 +1,11 @@
 from typing import Annotated, List
-from fastapi import APIRouter, Depends, status, UploadFile, File, HTTPException
+from fastapi import APIRouter, Depends, status, UploadFile, File, HTTPException, Request
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import or_, text
 from sqlmodel import select
 import uuid
 from src.shared.infrastructure.database import get_async_session
+from src.shared.infrastructure.settings import get_settings
 from src.shared.infrastructure.event_bus import get_event_bus
 from src.shared.infrastructure.exceptions import domain_exception_to_http, DomainException
 from src.modules.iam.infrastructure.http.dependencies import get_current_user
@@ -18,6 +19,22 @@ from ...application.use_cases.ajouter_fichier import AjouterFichierUseCase, Ajou
 from .schemas import RessourceCreate, RessourceResponse, FichierResponse, PresignedUrlResponse
 
 router = APIRouter(prefix="/ressources", tags=["Document"])
+
+
+def _public_minio_endpoint(request: Request) -> str:
+    """Endpoint MinIO joignable depuis le client à l'origine de la requête.
+
+    Sur un téléphone, l'API est jointe via une IP LAN (ex. 192.168.1.10:8000) ;
+    le stockage objet est exposé sur la même machine. On reconstruit donc
+    « <hôte-de-la-requête>:<port-public-minio> » afin que les URLs présignées
+    soient ouvrables depuis l'appareil. Un override explicite
+    (MINIO_PUBLIC_ENDPOINT) reste prioritaire.
+    """
+    settings = get_settings()
+    if settings.minio_public_endpoint:
+        return settings.minio_public_endpoint
+    host = request.url.hostname or "localhost"
+    return f"{host}:{settings.minio_public_port}"
 
 
 @router.post("/", status_code=status.HTTP_201_CREATED)
@@ -177,6 +194,7 @@ async def supprimer_ressource(
 @router.get("/{ressource_id}/fichiers")
 async def lister_fichiers(
     ressource_id: uuid.UUID,
+    request: Request,
     current_user: Annotated[Utilisateur, Depends(get_current_user)],
     session: AsyncSession = Depends(get_async_session),
 ):
@@ -185,11 +203,14 @@ async def lister_fichiers(
     )
     fichiers = list(result.scalars())
     stockage = MinioAdapter()
+    public_endpoint = _public_minio_endpoint(request)
     sortie = []
     for f in fichiers:
         url = None
         try:
-            url = await stockage.telecharger_url(f.minio_bucket, f.minio_key)
+            url = await stockage.telecharger_url(
+                f.minio_bucket, f.minio_key, public_endpoint=public_endpoint
+            )
         except Exception:
             url = None
         sortie.append({
@@ -206,11 +227,14 @@ async def lister_fichiers(
 async def obtenir_url_telechargement(
     ressource_id: uuid.UUID,
     fichier_id: uuid.UUID,
+    request: Request,
     session: AsyncSession = Depends(get_async_session),
 ):
     model = await session.get(FichierModel, fichier_id)
     if not model or model.ressource_id != ressource_id:
         raise HTTPException(status_code=404, detail="Fichier introuvable")
     stockage = MinioAdapter()
-    url = await stockage.telecharger_url(model.minio_bucket, model.minio_key)
+    url = await stockage.telecharger_url(
+        model.minio_bucket, model.minio_key, public_endpoint=_public_minio_endpoint(request)
+    )
     return PresignedUrlResponse(url=url)

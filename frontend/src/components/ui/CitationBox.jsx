@@ -50,7 +50,7 @@ export default function CitationBox({ documentId }) {
 
   return (
     <div>
-      <div className="mb-3 flex gap-1 rounded-lg bg-gray-50 p-1">
+      <div className="mb-3 flex gap-1 rounded-lg bg-gray-50 p-1 dark:bg-navy-900">
         {FORMATS.map((f) => (
           <button
             key={f.value}
@@ -59,8 +59,8 @@ export default function CitationBox({ documentId }) {
             className={clsx(
               'flex-1 rounded-md px-2.5 py-1.5 text-xs font-medium transition-all duration-200',
               format === f.value
-                ? 'bg-navy-900 text-white shadow-sm'
-                : 'text-gray-500 hover:text-gray-900',
+                ? 'bg-navy-900 text-white shadow-sm dark:bg-navy-700'
+                : 'text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-100',
             )}
           >
             {f.label}
@@ -68,7 +68,7 @@ export default function CitationBox({ documentId }) {
         ))}
       </div>
 
-      <div className="rounded-lg border border-gray-200 bg-gray-50 p-3.5">
+      <div className="rounded-lg border border-gray-200 bg-gray-50 p-3.5 dark:border-navy-700 dark:bg-navy-900">
         {loading ? (
           <div className="space-y-2">
             <div className="skeleton h-3 w-full" />
@@ -76,11 +76,11 @@ export default function CitationBox({ documentId }) {
             <div className="skeleton h-3 w-4/5" />
           </div>
         ) : citation ? (
-          <pre className="max-h-36 overflow-y-auto whitespace-pre-wrap break-words font-mono text-[11px] leading-relaxed text-gray-900">
+          <pre className="max-h-36 overflow-y-auto whitespace-pre-wrap break-words font-mono text-[11px] leading-relaxed text-gray-900 dark:text-gray-100">
             {citation}
           </pre>
         ) : (
-          <p className="text-sm text-gray-500">Citation indisponible.</p>
+          <p className="text-sm text-gray-500 dark:text-gray-400">Citation indisponible.</p>
         )}
       </div>
 
@@ -91,8 +91,8 @@ export default function CitationBox({ documentId }) {
         className={clsx(
           'mt-3 flex w-full items-center justify-center gap-2 rounded-lg border py-2.5 text-xs font-medium transition-all duration-200 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50',
           copied
-            ? 'border-teal-300 bg-teal-50 text-teal-700'
-            : 'border-gray-200 bg-white text-gray-700 hover:border-teal-300 hover:bg-teal-50 hover:text-teal-700',
+            ? 'border-teal-300 bg-teal-50 text-teal-700 dark:border-teal-500/40 dark:bg-teal-500/15 dark:text-teal-300'
+            : 'border-gray-200 bg-white text-gray-700 hover:border-teal-300 hover:bg-teal-50 hover:text-teal-700 dark:border-navy-700 dark:bg-navy-800 dark:text-gray-200 dark:hover:border-teal-500/40 dark:hover:bg-teal-500/10 dark:hover:text-teal-300',
         )}
       >
         {copied ? (

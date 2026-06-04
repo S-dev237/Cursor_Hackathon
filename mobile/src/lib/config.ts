@@ -12,7 +12,7 @@
  * À défaut, la valeur par défaut ci-dessous est utilisée — pensez à
  * remplacer l'IP par celle de votre machine.
  */
-const DEFAULT_API_URL = 'http://192.168.1.10:8000';
+const DEFAULT_API_URL = 'http://10.125.182.185:8000';
 
 export const API_URL = process.env.EXPO_PUBLIC_API_URL ?? DEFAULT_API_URL;
 

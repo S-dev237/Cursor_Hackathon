@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+from ...domain.aggregates.utilisateur import Utilisateur
 from ...domain.repositories.utilisateur_repository import IUtilisateurRepository
 from ...infrastructure.services.password_service import PasswordService
 from ...infrastructure.services.jwt_service import JWTService
@@ -17,6 +18,12 @@ class TokenDTO:
     token_type: str = "bearer"
 
 
+@dataclass(frozen=True)
+class ConnexionResult:
+    token: TokenDTO
+    utilisateur: Utilisateur
+
+
 class ConnecterUtilisateurUseCase:
     def __init__(
         self,
@@ -28,7 +35,7 @@ class ConnecterUtilisateurUseCase:
         self._pwd = password_service
         self._jwt = jwt_service
 
-    async def execute(self, cmd: ConnecterUtilisateurCommand) -> TokenDTO:
+    async def execute(self, cmd: ConnecterUtilisateurCommand) -> ConnexionResult:
         utilisateur = await self._repo.trouver_par_email(cmd.email)
         if not utilisateur:
             raise IdentifiantsInvalidesException()
@@ -39,9 +46,12 @@ class ConnecterUtilisateurUseCase:
         if not utilisateur.actif:
             raise UtilisateurInactifException()
 
+        utilisateur.enregistrer_connexion()
+        await self._repo.mettre_a_jour(utilisateur)
+
         token = self._jwt.creer_token(
             utilisateur_id=str(utilisateur.id),
             email=utilisateur.email,
             type_user=utilisateur.type,
         )
-        return TokenDTO(access_token=token)
+        return ConnexionResult(token=TokenDTO(access_token=token), utilisateur=utilisateur)

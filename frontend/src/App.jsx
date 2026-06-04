@@ -1,7 +1,9 @@
 import { lazy, Suspense } from 'react'
 import { BrowserRouter, Routes, Route } from 'react-router-dom'
 import { AuthProvider } from './contexts/AuthContext.jsx'
+import { AssistantProvider } from './contexts/AssistantContext.jsx'
 import { ToastProvider } from './components/ui/Toast.jsx'
+import AssistantWidget from './components/assistant/AssistantWidget.jsx'
 import PrivateRoute from './components/layout/PrivateRoute.jsx'
 import Spinner from './components/ui/Spinner.jsx'
 
@@ -15,7 +17,8 @@ import LoginPage from './pages/LoginPage.jsx'
 import RegisterPage from './pages/RegisterPage.jsx'
 import SubmitPage from './pages/SubmitPage.jsx'
 import MySubmissionsPage from './pages/MySubmissionsPage.jsx'
-import AdminQueue from './pages/admin/AdminQueue.jsx'
+import ProfilePage from './pages/ProfilePage.jsx'
+import AdminDashboard from './pages/admin/AdminDashboard.jsx'
 import NotFoundPage from './pages/NotFoundPage.jsx'
 
 export default function App() {
@@ -23,7 +26,8 @@ export default function App() {
     <BrowserRouter>
       <AuthProvider>
         <ToastProvider>
-          <Routes>
+          <AssistantProvider>
+            <Routes>
             {/* Routes publiques */}
             <Route path="/" element={<LandingPage />} />
             <Route path="/search" element={<SearchPage />} />
@@ -34,7 +38,7 @@ export default function App() {
               element={
                 <Suspense
                   fallback={
-                    <div className="flex min-h-dvh items-center justify-center bg-gray-bg">
+                    <div className="page-shell flex min-h-dvh items-center justify-center">
                       <Spinner size={32} />
                     </div>
                   }
@@ -50,16 +54,19 @@ export default function App() {
             <Route element={<PrivateRoute />}>
               <Route path="/submit" element={<SubmitPage />} />
               <Route path="/my-submissions" element={<MySubmissionsPage />} />
+              <Route path="/profile" element={<ProfilePage />} />
             </Route>
 
             {/* Routes admin */}
             <Route element={<PrivateRoute adminOnly />}>
-              <Route path="/admin" element={<AdminQueue />} />
-              <Route path="/admin/queue" element={<AdminQueue />} />
+              <Route path="/admin" element={<AdminDashboard />} />
+              <Route path="/admin/queue" element={<AdminDashboard />} />
             </Route>
 
             <Route path="*" element={<NotFoundPage />} />
-          </Routes>
+            </Routes>
+            <AssistantWidget />
+          </AssistantProvider>
         </ToastProvider>
       </AuthProvider>
     </BrowserRouter>

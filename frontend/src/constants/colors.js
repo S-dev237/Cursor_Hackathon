@@ -39,6 +39,31 @@ export const DOC_TYPE_LABELS = {
 
 export const DOC_TYPES = ['thesis', 'memoir', 'article', 'report']
 
+/** @typedef {'draft'|'published'|'withdrawn'} DocStatus */
+
+// Statuts de publication (auto-publication par l'auteur)
+export const STATUS = {
+  draft: {
+    label: 'Brouillon',
+    cls: 'border-amber bg-amber-light text-amber-dark dark:border-amber/40 dark:bg-amber/15 dark:text-amber-light',
+  },
+  published: {
+    label: 'Publié',
+    cls: 'border-teal-mid bg-teal-light text-teal-dark dark:border-teal-500/40 dark:bg-teal-500/15 dark:text-teal-300',
+  },
+  withdrawn: {
+    label: 'Retiré',
+    cls: 'border-gray-border bg-gray-light text-gray-muted dark:border-navy-700 dark:bg-navy-900 dark:text-gray-400',
+  },
+}
+
+export const STATUS_OPTIONS = [
+  { value: '', label: 'Tous les statuts' },
+  { value: 'published', label: 'Publié' },
+  { value: 'draft', label: 'Brouillon' },
+  { value: 'withdrawn', label: 'Retiré' },
+]
+
 export const SORT_OPTIONS = [
   { value: 'relevance', label: 'Pertinence' },
   { value: 'date', label: 'Date' },
@@ -50,4 +75,6 @@ export const STORAGE_KEYS = {
   token: 'osh_token',
   user: 'osh_user',
   draft: 'osh_draft',
+  theme: 'osh_theme',
+  chat: 'osh_chat',
 }

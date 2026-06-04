@@ -58,7 +58,7 @@ export default function DocumentCard({ document, detailed = false, index = 0 }) 
     >
       <Link
         to={`/documents/${id}`}
-        className="group relative flex flex-col overflow-hidden rounded-xl border border-gray-200/60 bg-white p-5 shadow-card transition-all duration-200 ease-premium hover:-translate-y-0.5 hover:border-teal-border hover:shadow-card-hover"
+        className="group relative flex flex-col overflow-hidden rounded-xl border border-gray-200/60 bg-white p-5 shadow-card transition-all duration-200 ease-premium hover:-translate-y-0.5 hover:border-teal-border hover:shadow-card-hover dark:border-navy-700 dark:bg-navy-800 dark:hover:border-teal-500/40"
       >
         <div className="mb-3 flex items-center gap-2">
           <TypeBadge type={doc_type} />
@@ -70,7 +70,7 @@ export default function DocumentCard({ document, detailed = false, index = 0 }) 
           )}
         </div>
 
-        <h3 className="mb-2 font-serif text-[15px] font-semibold leading-snug text-gray-900 line-clamp-2 transition-colors duration-200 group-hover:text-teal-600">
+        <h3 className="mb-2 font-serif text-[15px] font-semibold leading-snug text-gray-900 line-clamp-2 transition-colors duration-200 group-hover:text-teal-600 dark:text-gray-100 dark:group-hover:text-teal-400">
           {title}
         </h3>
 
@@ -86,7 +86,7 @@ export default function DocumentCard({ document, detailed = false, index = 0 }) 
         </p>
 
         {detailed && abstract && (
-          <p className="mb-3 text-[13px] leading-relaxed text-gray-700/80 line-clamp-2">
+          <p className="mb-3 text-[13px] leading-relaxed text-gray-700/80 line-clamp-2 dark:text-gray-300/80">
             {abstract}
           </p>
         )}
@@ -96,7 +96,7 @@ export default function DocumentCard({ document, detailed = false, index = 0 }) 
             {keywords.slice(0, 3).map((kw) => (
               <span
                 key={kw}
-                className="rounded-full bg-gray-50 px-2.5 py-0.5 text-[11px] text-gray-500"
+                className="rounded-full bg-gray-50 px-2.5 py-0.5 text-[11px] text-gray-500 dark:bg-navy-900 dark:text-gray-400"
               >
                 {kw}
               </span>
@@ -104,7 +104,7 @@ export default function DocumentCard({ document, detailed = false, index = 0 }) 
           </div>
         )}
 
-        <div className="mt-auto flex items-center justify-between border-t border-gray-200/60 pt-3">
+        <div className="mt-auto flex items-center justify-between border-t border-gray-200/60 pt-3 dark:border-navy-700">
           <div className="flex items-center gap-3 font-mono text-[11px] text-gray-400">
             <span className="inline-flex items-center gap-1">
               <EyeIcon />

@@ -111,7 +111,10 @@ export const api = {
     if (params.categorie) qs.set('categorie', params.categorie);
     if (params.q) qs.set('q', params.q);
     const suffix = qs.toString() ? `?${qs.toString()}` : '';
-    return request<Ressource[]>(`/ressources${suffix}`);
+    // Slash final explicite : la route liste est montée sur « /ressources/ ».
+    // L'appeler directement évite une redirection 307 (et le risque de perte
+    // de l'en-tête Authorization lors du suivi de redirection côté RN).
+    return request<Ressource[]>(`/ressources/${suffix}`);
   },
 
   lireRessource(id: string): Promise<Ressource> {

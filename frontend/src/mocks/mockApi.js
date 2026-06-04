@@ -5,11 +5,13 @@ import {
   MOCK_INSTITUTIONS,
   MOCK_SAMPLE_PDF_URL,
   MOCK_USERS,
+  MOCK_USER_LIST,
   MOCK_AI_EXTRACTION,
 } from './mockData.js'
 
 /** État mutable en mémoire (session dev). */
 let documents = structuredClone(INITIAL_DOCUMENTS)
+let users = structuredClone(MOCK_USER_LIST)
 let nextDocId = 100
 
 export function isMockMode() {
@@ -30,12 +32,12 @@ function enrich(doc) {
   }
 }
 
-function approvedDocs() {
-  return documents.filter((d) => d.status === 'approved')
+function publishedDocs() {
+  return documents.filter((d) => d.status === 'published')
 }
 
-function pendingDocs() {
-  return documents.filter((d) => d.status === 'pending')
+function draftDocs() {
+  return documents.filter((d) => d.status === 'draft')
 }
 
 function matchQuery(doc, q) {
@@ -94,7 +96,7 @@ export async function mockGetMe() {
 // —— Documents ——
 export async function mockSearchDocuments(params = {}) {
   await mockDelay()
-  let list = approvedDocs()
+  let list = publishedDocs()
 
   if (params.exclude_id) {
     list = list.filter((d) => String(d.id) !== String(params.exclude_id))
@@ -157,7 +159,7 @@ export async function mockSubmitDocument(_file, metadata = {}) {
     title: metadata.title || 'Nouvelle soumission (sans titre)',
     abstract: metadata.abstract || '',
     doc_type: metadata.doc_type || 'memoir',
-    status: 'pending',
+    status: 'draft',
     authors: metadata.authors || [user.full_name],
     keywords: metadata.keywords || [],
     publication_year: metadata.publication_year || new Date().getFullYear(),
@@ -199,14 +201,14 @@ export async function mockGetCitation(_id, format = 'bibtex') {
 
 export async function mockGetStats() {
   await mockDelay(150)
-  const approved = approvedDocs()
+  const published = publishedDocs()
   return {
     data: {
-      total_documents: approved.length,
-      total_users: 42,
+      total_documents: published.length,
+      total_users: users.length,
       total_institutions: MOCK_INSTITUTIONS.length,
-      total_downloads: approved.reduce((s, d) => s + (d.download_count || 0), 0),
-      pending_reviews: pendingDocs().length,
+      total_downloads: published.reduce((s, d) => s + (d.download_count || 0), 0),
+      total_drafts: draftDocs().length,
     },
     error: null,
   }
@@ -222,32 +224,198 @@ export async function mockGetInstitutions() {
   return { data: MOCK_INSTITUTIONS, error: null }
 }
 
-export async function mockGetAdminQueue() {
+async function mockSetStatus(id, status, delay = 320) {
+  await mockDelay(delay)
+  const idx = documents.findIndex((d) => String(d.id) === String(id))
+  if (idx === -1) return { data: null, error: 'Document introuvable' }
+  documents[idx] = enrich({ ...documents[idx], status })
+  return { data: documents[idx], error: null }
+}
+
+export function mockPublishDocument(id) {
+  return mockSetStatus(id, 'published')
+}
+
+export function mockWithdrawDocument(id) {
+  return mockSetStatus(id, 'withdrawn')
+}
+
+/** Liste admin de TOUS les documents, filtrable par statut. */
+export async function mockGetAllDocuments(params = {}) {
   await mockDelay()
-  const list = pendingDocs().sort(
-    (a, b) => new Date(a.created_at) - new Date(b.created_at),
-  )
+  let list = [...documents]
+  if (params.status) list = list.filter((d) => d.status === params.status)
+  if (params.q) list = list.filter((d) => matchQuery(d, params.q))
+  list.sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
   return {
     data: { documents: list.map(enrich), total: list.length },
     error: null,
   }
 }
 
-export async function mockReviewDocument(id, payload) {
-  await mockDelay(350)
-  const idx = documents.findIndex((d) => String(d.id) === String(id))
-  if (idx === -1) return { data: null, error: 'Document introuvable' }
-  documents[idx] = {
-    ...documents[idx],
-    status: payload.status,
-    rejection_reason: payload.rejection_reason,
-  }
-  return { data: enrich(documents[idx]), error: null }
+// —— Utilisateurs (gestion admin en mémoire) ——
+export async function mockGetUsers() {
+  await mockDelay(180)
+  const enriched = users.map((u) => ({
+    ...u,
+    institution_name:
+      MOCK_INSTITUTIONS.find((i) => i.id === u.institution_id)?.name || '',
+  }))
+  return { data: { users: enriched, total: enriched.length }, error: null }
+}
+
+export async function mockSetUserRole(id, role) {
+  await mockDelay(220)
+  const idx = users.findIndex((u) => u.id === id)
+  if (idx === -1) return { data: null, error: 'Utilisateur introuvable' }
+  users[idx] = { ...users[idx], role }
+  return { data: users[idx], error: null }
+}
+
+export async function mockSetUserActive(id, isActive) {
+  await mockDelay(220)
+  const idx = users.findIndex((u) => u.id === id)
+  if (idx === -1) return { data: null, error: 'Utilisateur introuvable' }
+  users[idx] = { ...users[idx], is_active: isActive }
+  return { data: users[idx], error: null }
+}
+
+// —— Profil utilisateur courant ——
+export async function mockUpdateMe(payload = {}) {
+  await mockDelay(280)
+  const raw = localStorage.getItem('osh_user')
+  if (!raw) return { data: null, error: 'Non authentifié' }
+  const current = JSON.parse(raw)
+  const allowed = {}
+  if (payload.full_name !== undefined) allowed.full_name = payload.full_name
+  if (payload.institution_id !== undefined)
+    allowed.institution_id = payload.institution_id
+  const next = { ...current, ...allowed }
+  localStorage.setItem('osh_user', JSON.stringify(next))
+
+  // Garde la liste admin cohérente si l'utilisateur courant y figure
+  const idx = users.findIndex((u) => u.id === next.id || u.email === next.email)
+  if (idx !== -1) users[idx] = { ...users[idx], ...allowed }
+
+  return { data: next, error: null }
 }
 
 export async function mockExtractMetadata() {
   await mockDelay(1500)
   return { data: { ...MOCK_AI_EXTRACTION }, error: null }
+}
+
+// —— Traduction (simulation, démo sans backend) ——
+// Traductions FR→EN soignées pour les documents publiés (seed).
+const MOCK_TRANSLATIONS_EN = {
+  'doc-1': {
+    title: 'Deep Learning applied to agricultural remote sensing in Cameroon',
+    abstract:
+      'This thesis explores the application of convolutional neural networks to crop classification from Sentinel-2 satellite imagery.',
+    keywords: ['machine learning', 'remote sensing', 'agriculture'],
+  },
+  'doc-2': {
+    title: 'Structural modeling of bridges in seismic zones',
+    abstract:
+      'Numerical analysis of bridge structures subjected to seismic loading in a tropical context.',
+    keywords: ['civil engineering', 'seismic', 'simulation'],
+  },
+  'doc-3': {
+    title: 'Epidemiology of neglected tropical diseases in Central Africa',
+    abstract:
+      'Systematic review and spatial analysis of epidemiological data on NTDs in the CEMAC region.',
+    keywords: ['epidemiology', 'public health', 'Africa'],
+  },
+  'doc-4': {
+    title: 'Impact of microfinance on the financial inclusion of SMEs',
+    abstract:
+      'Empirical study on credit access for small businesses in Cameroonian urban areas.',
+    keywords: ['microfinance', 'SMEs', 'economics'],
+  },
+  'doc-5': {
+    title: 'Energy optimization of tropical buildings',
+    abstract:
+      'Proposal of a thermal simulation model adapted to humid equatorial climates.',
+    keywords: ['energy', 'building', 'sustainability'],
+  },
+  'doc-6': {
+    title: 'Optical properties of two-dimensional nanomaterials',
+    abstract:
+      'Experimental characterization and theoretical modeling of the optical properties of 2D materials.',
+    keywords: ['physics', 'nanomaterials', 'optics'],
+  },
+}
+
+// Glossaire de repli pour les documents sans traduction soignée.
+const FR_EN_GLOSSARY = {
+  recommandation: 'recommendation',
+  bibliothèque: 'library',
+  droit: 'law',
+  gouvernance: 'governance',
+  transport: 'transport',
+  algorithmes: 'algorithms',
+  génétiques: 'genetic',
+  optimisation: 'optimization',
+  réseaux: 'networks',
+  santé: 'health',
+  économie: 'economics',
+  énergie: 'energy',
+  bâtiment: 'building',
+  durabilité: 'sustainability',
+  physique: 'physics',
+  optique: 'optics',
+  agriculture: 'agriculture',
+  simulation: 'simulation',
+  télédétection: 'remote sensing',
+}
+
+function glossaryTranslate(text = '') {
+  return text.replace(/[A-Za-zÀ-ÿ]+/g, (word) => {
+    const hit = FR_EN_GLOSSARY[word.toLowerCase()]
+    if (!hit) return word
+    return word[0] === word[0].toUpperCase()
+      ? hit[0].toUpperCase() + hit.slice(1)
+      : hit
+  })
+}
+
+export async function mockTranslateDocument(id, targetLang = 'en') {
+  await mockDelay(900)
+  const document = documents.find((d) => String(d.id) === String(id))
+  if (!document) return { data: null, error: 'Document introuvable' }
+
+  // Le corpus de démo est en français : traduire vers 'fr' renvoie l'original.
+  if (targetLang === 'fr') {
+    return {
+      data: {
+        title: document.title,
+        abstract: document.abstract,
+        keywords: document.keywords || [],
+        target_lang: 'fr',
+        simulated: false,
+      },
+      error: null,
+    }
+  }
+
+  const curated = MOCK_TRANSLATIONS_EN[id]
+  if (curated) {
+    return {
+      data: { ...curated, target_lang: 'en', simulated: true },
+      error: null,
+    }
+  }
+
+  return {
+    data: {
+      title: glossaryTranslate(document.title),
+      abstract: glossaryTranslate(document.abstract || ''),
+      keywords: (document.keywords || []).map(glossaryTranslate),
+      target_lang: 'en',
+      simulated: true,
+    },
+    error: null,
+  }
 }
 
 export function mockRegisterView(id) {

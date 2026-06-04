@@ -11,9 +11,10 @@ import { api, setTokenGetter } from './api';
 import type { Utilisateur, TypeUtilisateur } from './types';
 
 // ── DEV MODE ──────────────────────────────────────────────────────────
-// Authentification locale sans serveur. Mettre à false pour ré-activer
-// la vraie validation backend.
-const DEV_AUTH = true;
+// Authentification locale sans serveur. Mettre à true pour réactiver
+// l'authentification factice hors-ligne. En production / démo connectée,
+// laisser à false : login/inscription passent par le backend réel (IAM).
+const DEV_AUTH = false;
 
 function makeFakeUser(email: string, type_user: TypeUtilisateur): Utilisateur {
   return {

@@ -46,6 +46,9 @@ async def lifespan(app: FastAPI):
     try:
         await create_db_and_tables()
         logger.info("Base de données initialisée.")
+        # Comptes de démonstration (idempotent) pour l'authentification réelle.
+        from src.modules.iam.infrastructure.seed import seed_demo_users
+        await seed_demo_users()
     except Exception as exc:
         logger.warning(
             "Impossible de se connecter à PostgreSQL au démarrage : %s\n"

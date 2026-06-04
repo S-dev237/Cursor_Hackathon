@@ -72,8 +72,8 @@ function FeatureCard({ title, description, icon, highlighted, className = '' }) 
       className={clsx(
         'group relative flex flex-col rounded-xl border p-7 shadow-card transition-all duration-200 hover:-translate-y-0.5 hover:shadow-card-hover',
         highlighted
-          ? 'border-teal-300/40 bg-teal-50/80'
-          : 'border-gray-200/60 bg-white hover:border-teal-300/50',
+          ? 'border-teal-300/40 bg-teal-50/80 dark:border-teal-500/30 dark:bg-teal-500/10'
+          : 'border-gray-200/60 bg-white hover:border-teal-300/50 dark:border-navy-700 dark:bg-navy-800 dark:hover:border-teal-500/40',
         className,
       )}
     >
@@ -88,13 +88,13 @@ function FeatureCard({ title, description, icon, highlighted, className = '' }) 
           'mb-4 flex h-11 w-11 items-center justify-center rounded-lg transition-colors duration-200',
           highlighted
             ? 'bg-teal-500 text-white shadow-teal'
-            : 'bg-gray-50 text-teal-700 group-hover:bg-teal-50',
+            : 'bg-gray-50 text-teal-700 group-hover:bg-teal-50 dark:bg-navy-900 dark:text-teal-400 dark:group-hover:bg-teal-500/10',
         )}
       >
         {icon}
       </div>
-      <h3 className="mb-2 font-serif text-xl font-semibold text-gray-900">{title}</h3>
-      <p className="text-sm leading-relaxed text-gray-500">{description}</p>
+      <h3 className="mb-2 font-serif text-xl font-semibold text-gray-900 dark:text-gray-100">{title}</h3>
+      <p className="text-sm leading-relaxed text-gray-500 dark:text-gray-400">{description}</p>
     </motion.div>
   )
 }
@@ -110,8 +110,8 @@ function StepCard({ number, title, description, index }) {
       className="relative"
     >
       <div className="mb-3 font-serif text-4xl font-semibold text-teal-500/25">{number}</div>
-      <h3 className="mb-1.5 font-serif text-lg font-semibold text-gray-900">{title}</h3>
-      <p className="text-sm leading-relaxed text-gray-500">{description}</p>
+      <h3 className="mb-1.5 font-serif text-lg font-semibold text-gray-900 dark:text-gray-100">{title}</h3>
+      <p className="text-sm leading-relaxed text-gray-500 dark:text-gray-400">{description}</p>
     </motion.div>
   )
 }
@@ -124,7 +124,7 @@ export default function LandingPage() {
 
   useEffect(() => {
     getStats().then(({ data }) => data && setStats(data))
-    searchDocuments({ sort: 'date', per_page: 6, status: 'approved' }).then(
+    searchDocuments({ sort: 'date', per_page: 6, status: 'published' }).then(
       ({ data }) => data?.documents && setRecent(data.documents),
     )
     getInstitutions().then(
@@ -137,6 +137,8 @@ export default function LandingPage() {
   }
 
   const trustNames = institutions.length ? institutions : FALLBACK_INSTITUTIONS
+  // Répété pour qu'un groupe remplisse la largeur et que la boucle reste fluide.
+  const marqueeNames = Array.from({ length: 3 }, () => trustNames).flat()
 
   const statItems = [
     { value: stats?.total_documents, label: 'Documents' },
@@ -146,7 +148,7 @@ export default function LandingPage() {
   ]
 
   return (
-    <div className="flex min-h-dvh flex-col bg-gray-100">
+    <div className="page-shell flex min-h-dvh flex-col">
       <Seo
         title="Répertoire ouvert des travaux universitaires"
         description="Thèses, mémoires et articles académiques, indexés et accessibles. Recherchez, citez et partagez la recherche universitaire."
@@ -255,20 +257,36 @@ export default function LandingPage() {
       </section>
 
       {/* ── TRUST STRIP ──────────────────────────────────────── */}
-      <section className="border-b border-gray-200/60 bg-white">
-        <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6">
-          <p className="section-label mb-5 text-center">
+      <section className="border-b border-gray-200/60 bg-white dark:border-navy-800 dark:bg-navy-900">
+        <div className="py-8">
+          <p className="section-label mb-6 text-center">
             Travaux issus des établissements partenaires
           </p>
-          <div className="flex flex-wrap items-center justify-center gap-x-10 gap-y-3">
-            {trustNames.slice(0, 5).map((name) => (
-              <span
-                key={name}
-                className="font-serif text-sm font-medium text-gray-500/90 transition-colors duration-200 hover:text-gray-900"
-              >
-                {name}
-              </span>
-            ))}
+          <div className="marquee-mask group relative overflow-hidden">
+            <div className="marquee-track flex w-max animate-marquee">
+              {[0, 1].map((groupIndex) => (
+                <ul
+                  key={groupIndex}
+                  className="flex shrink-0 items-center"
+                  aria-hidden={groupIndex === 1 ? 'true' : undefined}
+                >
+                  {marqueeNames.map((name, i) => (
+                    <li
+                      key={`${groupIndex}-${i}`}
+                      className="flex items-center whitespace-nowrap"
+                    >
+                      <span className="font-serif text-sm font-medium text-gray-500/90 transition-colors duration-200 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-100">
+                        {name}
+                      </span>
+                      <span
+                        aria-hidden="true"
+                        className="mx-8 h-1 w-1 rounded-full bg-gray-300 dark:bg-navy-700"
+                      />
+                    </li>
+                  ))}
+                </ul>
+              ))}
+            </div>
           </div>
         </div>
       </section>
@@ -277,7 +295,7 @@ export default function LandingPage() {
       <section className="mx-auto w-full max-w-7xl px-4 py-20 sm:px-6">
         <div className="mb-10 flex items-end justify-between gap-4">
           <div>
-            <h2 className="font-serif text-3xl font-semibold text-gray-900">
+            <h2 className="font-serif text-3xl font-semibold text-gray-900 dark:text-gray-100">
               Récemment ajoutés
             </h2>
             <p className="mt-2 text-sm text-gray-500">
@@ -299,14 +317,14 @@ export default function LandingPage() {
             ))}
           </div>
         ) : (
-          <div className="rounded-xl border border-dashed border-gray-200 bg-white p-14 text-center">
-            <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-xl bg-gray-50">
+          <div className="rounded-xl border border-dashed border-gray-200 bg-white p-14 text-center dark:border-navy-700 dark:bg-navy-800">
+            <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-xl bg-gray-50 dark:bg-navy-900">
               <svg viewBox="0 0 48 48" fill="none" className="h-8 w-8 text-gray-400" aria-hidden="true">
                 <rect x="8" y="6" width="28" height="36" rx="2" stroke="currentColor" strokeWidth="1.5" />
                 <path d="M8 14h28M14 22h16M14 28h20M14 34h12" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
               </svg>
             </div>
-            <h3 className="font-serif text-lg font-semibold text-gray-900">
+            <h3 className="font-serif text-lg font-semibold text-gray-900 dark:text-gray-100">
               Aucune publication pour le moment
             </h3>
             <p className="mx-auto mt-2 max-w-sm text-sm text-gray-500">
@@ -320,7 +338,7 @@ export default function LandingPage() {
       </section>
 
       {/* ── FONCTIONNALITÉS (bento) ───────────────────────────── */}
-      <section className="border-y border-gray-200/60 bg-white py-20">
+      <section className="border-y border-gray-200/60 bg-white py-20 dark:border-navy-800 dark:bg-navy-900">
         <motion.div
           initial="hidden"
           whileInView="visible"
@@ -329,10 +347,10 @@ export default function LandingPage() {
           className="mx-auto max-w-7xl px-4 sm:px-6"
         >
           <div className="mx-auto mb-14 max-w-2xl text-center">
-            <motion.h2 variants={fadeUp} className="font-serif text-3xl font-semibold text-gray-900">
+            <motion.h2 variants={fadeUp} className="font-serif text-3xl font-semibold text-gray-900 dark:text-gray-100">
               Une plateforme pensée pour la recherche
             </motion.h2>
-            <motion.p variants={fadeUp} custom={1} className="mt-3 text-gray-500">
+            <motion.p variants={fadeUp} custom={1} className="mt-3 text-gray-500 dark:text-gray-400">
               De la découverte à la citation, chaque étape est conçue pour faire
               gagner du temps aux chercheurs.
             </motion.p>
@@ -382,7 +400,7 @@ export default function LandingPage() {
       </section>
 
       {/* ── VITRINE IA ───────────────────────────────────────── */}
-      <section className="overflow-hidden bg-gray-100 py-20">
+      <section className="overflow-hidden bg-gray-100 py-20 dark:bg-navy-900">
         <div className="mx-auto grid max-w-6xl items-center gap-14 px-4 sm:px-6 lg:grid-cols-2">
           <motion.div
             initial="hidden"
@@ -399,11 +417,11 @@ export default function LandingPage() {
             <motion.h2
               variants={fadeUp}
               custom={1}
-              className="mt-5 font-serif text-3xl font-semibold leading-tight text-gray-900 sm:text-4xl"
+              className="mt-5 font-serif text-3xl font-semibold leading-tight text-gray-900 dark:text-gray-100 sm:text-4xl"
             >
               Vos métadonnées extraites en quelques secondes
             </motion.h2>
-            <motion.p variants={fadeUp} custom={2} className="mt-4 max-w-md leading-relaxed text-gray-500">
+            <motion.p variants={fadeUp} custom={2} className="mt-4 max-w-md leading-relaxed text-gray-500 dark:text-gray-400">
               Déposez un PDF et l'IA analyse le document pour en extraire le
               titre, les auteurs, le résumé, les mots-clés et le domaine. Un
               score de confiance vous indique la fiabilité — chaque champ reste
@@ -415,7 +433,7 @@ export default function LandingPage() {
                 'Champs pré-remplis et éditables',
                 'Score de confiance transparent',
               ].map((item) => (
-                <li key={item} className="flex items-center gap-3 text-sm text-gray-900">
+                <li key={item} className="flex items-center gap-3 text-sm text-gray-900 dark:text-gray-200">
                   <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-teal-500 text-white shadow-teal">
                     <svg viewBox="0 0 16 16" className="h-3 w-3" fill="none">
                       <path d="M3.5 8.5l3 3 6-7" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
@@ -451,7 +469,7 @@ export default function LandingPage() {
           whileInView="visible"
           viewport={{ once: true }}
           variants={fadeUp}
-          className="mb-14 text-center font-serif text-3xl font-semibold text-gray-900"
+          className="mb-14 text-center font-serif text-3xl font-semibold text-gray-900 dark:text-gray-100"
         >
           Soumettre un travail en trois étapes
         </motion.h2>

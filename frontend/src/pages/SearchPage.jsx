@@ -15,7 +15,7 @@ import { useSearch } from '../hooks/useSearch.js'
 function ResultCount({ total, loading, query }) {
   if (loading) {
     return (
-      <p className="text-sm text-gray-500">
+      <p className="text-sm text-gray-500" aria-live="polite" aria-atomic="true">
         <span className="inline-flex items-center gap-2">
           <span className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-gray-200 border-t-teal-500" />
           Recherche en cours…
@@ -25,7 +25,7 @@ function ResultCount({ total, loading, query }) {
   }
 
   return (
-    <p className="text-sm text-gray-500">
+    <p className="text-sm text-gray-500" aria-live="polite" aria-atomic="true">
       <AnimatePresence mode="popLayout">
         <motion.span
           key={`${total}-${query}`}
@@ -53,7 +53,7 @@ function ResultCount({ total, loading, query }) {
 
 function EmptyState({ query, onSuggest }) {
   return (
-    <div className="rounded-xl border border-dashed border-gray-200 bg-white px-6 py-16 text-center">
+    <div className="rounded-xl border border-dashed border-gray-200 bg-white px-6 py-16 text-center dark:border-navy-700 dark:bg-navy-800">
       <div className="mx-auto mb-5 flex h-16 w-16 items-center justify-center rounded-xl bg-gray-50">
         <svg viewBox="0 0 48 48" fill="none" className="h-9 w-9 text-gray-400" aria-hidden="true">
           <circle cx="20" cy="20" r="12" stroke="currentColor" strokeWidth="1.5" />
@@ -61,7 +61,7 @@ function EmptyState({ query, onSuggest }) {
           <path d="M14 20h12M20 14v12" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" opacity="0.4" />
         </svg>
       </div>
-      <h3 className="font-serif text-xl font-semibold text-gray-900">
+      <h3 className="font-serif text-xl font-semibold text-gray-900 dark:text-gray-100">
         Aucun résultat{query ? ` pour « ${query} »` : ''}
       </h3>
       <p className="mx-auto mt-2 max-w-sm text-sm leading-relaxed text-gray-500">
@@ -106,7 +106,7 @@ export default function SearchPage() {
     (filters.ai_only ? 1 : 0)
 
   return (
-    <div className="flex min-h-dvh flex-col bg-gray-100">
+    <div className="page-shell flex min-h-dvh flex-col">
       <Seo
         title={filters.q ? `Recherche : ${filters.q}` : 'Recherche'}
         description="Explorez les thèses, mémoires et articles académiques par type, domaine, institution et année."
@@ -145,7 +145,7 @@ export default function SearchPage() {
               <button
                 type="button"
                 onClick={() => setFiltersOpen(true)}
-                className="inline-flex items-center gap-2 rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm font-medium text-gray-700 transition-all duration-200 hover:border-teal-300 hover:text-gray-900 lg:hidden"
+                className="inline-flex items-center gap-2 rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm font-medium text-gray-700 transition-all duration-200 hover:border-teal-300 hover:text-gray-900 dark:border-navy-700 dark:bg-navy-800 dark:text-gray-200 dark:hover:border-teal-500/40 lg:hidden"
               >
                 <svg viewBox="0 0 24 24" fill="none" className="h-4 w-4" aria-hidden="true">
                   <path d="M4 6h16M7 12h10M10 18h4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
@@ -163,7 +163,7 @@ export default function SearchPage() {
                 <select
                   value={filters.sort}
                   onChange={(e) => setFilter('sort', e.target.value)}
-                  className="rounded-lg border border-gray-200 bg-white py-2 pl-3 pr-8 text-sm text-gray-900 transition-all duration-200 focus:border-teal-400 focus:shadow-teal focus:ring-1 focus:ring-teal-500/20"
+                  className="rounded-lg border border-gray-200 bg-white py-2 pl-3 pr-8 text-sm text-gray-900 transition-all duration-200 focus:border-teal-400 focus:shadow-teal focus:ring-1 focus:ring-teal-500/20 dark:border-navy-700 dark:bg-navy-800 dark:text-gray-100"
                 >
                   {SORT_OPTIONS.map((o) => (
                     <option key={o.value} value={o.value}>
@@ -223,7 +223,7 @@ export default function SearchPage() {
               animate={{ y: 0 }}
               exit={{ y: '100%' }}
               transition={{ type: 'spring', stiffness: 400, damping: 36 }}
-              className="fixed inset-x-0 bottom-0 z-50 max-h-[85dvh] overflow-y-auto rounded-t-2xl border-t border-gray-200/60 bg-white p-5 shadow-navy lg:hidden"
+              className="fixed inset-x-0 bottom-0 z-50 max-h-[85dvh] overflow-y-auto rounded-t-2xl border-t border-gray-200/60 bg-white p-5 shadow-navy dark:border-navy-700 dark:bg-navy-900 lg:hidden"
             >
               <FilterSidebar
                 filters={filters}

@@ -11,8 +11,12 @@ import {
   mockGetStats,
   mockGetDomains,
   mockGetInstitutions,
-  mockGetAdminQueue,
-  mockReviewDocument,
+  mockPublishDocument,
+  mockWithdrawDocument,
+  mockGetAllDocuments,
+  mockGetUsers,
+  mockSetUserRole,
+  mockSetUserActive,
   mockRegisterView,
 } from '../mocks/mockApi.js'
 
@@ -149,20 +153,62 @@ export async function getInstitutions() {
   }
 }
 
-export async function getAdminQueue(params = {}) {
-  if (isMockMode()) return mockGetAdminQueue(params)
+export async function publishDocument(id) {
+  if (isMockMode()) return mockPublishDocument(id)
   try {
-    const { data } = await api.get('/admin/queue', { params })
+    const { data } = await api.patch(`/documents/${id}/publish`)
     return { data, error: null }
   } catch (err) {
     return { data: null, error: toError(err) }
   }
 }
 
-export async function reviewDocument(id, payload) {
-  if (isMockMode()) return mockReviewDocument(id, payload)
+export async function withdrawDocument(id) {
+  if (isMockMode()) return mockWithdrawDocument(id)
   try {
-    const { data } = await api.patch(`/admin/documents/${id}/review`, payload)
+    const { data } = await api.patch(`/documents/${id}/withdraw`)
+    return { data, error: null }
+  } catch (err) {
+    return { data: null, error: toError(err) }
+  }
+}
+
+export async function getAllDocuments(params = {}) {
+  if (isMockMode()) return mockGetAllDocuments(params)
+  try {
+    const { data } = await api.get('/admin/documents', { params })
+    return { data, error: null }
+  } catch (err) {
+    return { data: null, error: toError(err) }
+  }
+}
+
+export async function getUsers(params = {}) {
+  if (isMockMode()) return mockGetUsers(params)
+  try {
+    const { data } = await api.get('/admin/users', { params })
+    return { data, error: null }
+  } catch (err) {
+    return { data: null, error: toError(err) }
+  }
+}
+
+export async function setUserRole(id, role) {
+  if (isMockMode()) return mockSetUserRole(id, role)
+  try {
+    const { data } = await api.patch(`/admin/users/${id}/role`, { role })
+    return { data, error: null }
+  } catch (err) {
+    return { data: null, error: toError(err) }
+  }
+}
+
+export async function setUserActive(id, isActive) {
+  if (isMockMode()) return mockSetUserActive(id, isActive)
+  try {
+    const { data } = await api.patch(`/admin/users/${id}/active`, {
+      is_active: isActive,
+    })
     return { data, error: null }
   } catch (err) {
     return { data: null, error: toError(err) }

@@ -21,7 +21,7 @@ function FilterSection({ title, children, className = '' }) {
 
 function Checkbox({ checked, onChange, label, accent }) {
   return (
-    <label className="flex min-h-[40px] cursor-pointer items-center gap-3 rounded-lg px-2 py-1.5 text-sm text-gray-900 transition-colors duration-200 hover:bg-gray-50">
+    <label className="flex min-h-[40px] cursor-pointer items-center gap-3 rounded-lg px-2 py-1.5 text-sm text-gray-900 transition-colors duration-200 hover:bg-gray-50 dark:text-gray-100 dark:hover:bg-navy-700/60">
       <input
         type="checkbox"
         checked={checked}
@@ -87,7 +87,7 @@ function YearSelect({ value, onChange, label, options }) {
       <select
         value={value}
         onChange={(e) => onChange(e.target.value)}
-        className="w-full rounded-lg border border-gray-200 bg-gray-50/80 py-2 pl-3 pr-8 text-sm text-gray-900 transition-all duration-200 focus:border-teal-400 focus:bg-white focus:ring-1 focus:ring-teal-500/20"
+        className="w-full rounded-lg border border-gray-200 bg-gray-50/80 py-2 pl-3 pr-8 text-sm text-gray-900 transition-all duration-200 focus:border-teal-400 focus:bg-white focus:ring-1 focus:ring-teal-500/20 dark:border-navy-700 dark:bg-navy-900 dark:text-gray-100 dark:focus:border-teal-400 dark:focus:bg-navy-800"
       >
         {options.map((year) => (
           <option key={year} value={year}>
@@ -110,6 +110,7 @@ export default function FilterSidebar({
   const [institutions, setInstitutions] = useState([])
   const [showAllDomains, setShowAllDomains] = useState(false)
   const [showAllInstitutions, setShowAllInstitutions] = useState(false)
+  const [yearNote, setYearNote] = useState('')
 
   const years = useMemo(
     () => Array.from({ length: YEAR_MAX - YEAR_MIN + 1 }, (_, i) => YEAR_MAX - i),
@@ -149,23 +150,37 @@ export default function FilterSidebar({
   const yearFrom = filters.year_from || String(YEAR_MIN)
   const yearTo = filters.year_to || String(YEAR_MAX)
 
+  // Borne une année dans l'intervalle réaliste [YEAR_MIN, YEAR_MAX]
+  const clampYear = (value) =>
+    Math.min(YEAR_MAX, Math.max(YEAR_MIN, Number(value) || YEAR_MIN))
+
   const handleYearFrom = (value) => {
-    const from = Number(value)
+    const from = clampYear(value)
     const to = Number(filters.year_to || YEAR_MAX)
     setFilter('year_from', from <= YEAR_MIN ? '' : String(Math.min(from, to)))
-    if (from > to) setFilter('year_to', String(from))
+    if (from > to) {
+      setFilter('year_to', String(from))
+      setYearNote('« De » ne peut pas dépasser « À » — bornes ajustées.')
+    } else {
+      setYearNote('')
+    }
   }
 
   const handleYearTo = (value) => {
-    const to = Number(value)
+    const to = clampYear(value)
     const from = Number(filters.year_from || YEAR_MIN)
     setFilter('year_to', to >= YEAR_MAX ? '' : String(Math.max(to, from)))
-    if (to < from) setFilter('year_from', String(to))
+    if (to < from) {
+      setFilter('year_from', String(to))
+      setYearNote('« À » ne peut pas être inférieur à « De » — bornes ajustées.')
+    } else {
+      setYearNote('')
+    }
   }
 
   const panelClass = onClose
     ? 'space-y-1'
-    : 'lg:sticky lg:top-[4.5rem] lg:max-h-[calc(100dvh-5.5rem)] lg:overflow-y-auto lg:rounded-xl lg:border lg:border-gray-200/60 lg:bg-white lg:p-5 lg:shadow-card'
+    : 'lg:sticky lg:top-[4.5rem] lg:max-h-[calc(100dvh-5.5rem)] lg:overflow-y-auto lg:rounded-xl lg:border lg:border-gray-200/60 lg:bg-white lg:p-5 lg:shadow-card dark:lg:border-navy-700 dark:lg:bg-navy-800'
 
   return (
     <aside className={clsx('w-full shrink-0 lg:w-72', className)}>
@@ -174,10 +189,10 @@ export default function FilterSidebar({
         <div
           className={clsx(
             'mb-1 flex items-center justify-between gap-3',
-            !onClose && 'border-b border-gray-100 pb-4 lg:mb-2',
+            !onClose && 'border-b border-gray-100 pb-4 dark:border-navy-700 lg:mb-2',
           )}
         >
-          <h2 className="font-serif text-lg font-semibold text-gray-900">Filtres</h2>
+          <h2 className="font-serif text-lg font-semibold text-gray-900 dark:text-gray-100">Filtres</h2>
           <div className="flex items-center gap-2">
             {hasActiveFilters && (
               <button
@@ -210,7 +225,7 @@ export default function FilterSidebar({
 
         {/* Chips actifs */}
         {hasActiveFilters && (
-          <div className="mb-4 flex flex-wrap gap-1.5 rounded-xl bg-teal-50/50 p-3 ring-1 ring-teal-100/80">
+          <div className="mb-4 flex flex-wrap gap-1.5 rounded-xl bg-teal-50/50 p-3 ring-1 ring-teal-100/80 dark:bg-teal-500/10 dark:ring-teal-500/20">
             {filters.type.map((t) => (
               <FilterChip
                 key={t}
@@ -253,7 +268,7 @@ export default function FilterSidebar({
           </div>
         )}
 
-        <div className="divide-y divide-gray-100">
+        <div className="divide-y divide-gray-100 dark:divide-navy-700">
           <FilterSection title="Type de travail">
             <div className="-mx-2">
               {DOC_TYPES.map((type) => (
@@ -346,10 +361,19 @@ export default function FilterSidebar({
                 options={years}
               />
             </div>
+            <p
+              aria-live="polite"
+              className={clsx(
+                'mt-2 text-xs text-amber-dark transition-opacity duration-200',
+                yearNote ? 'opacity-100' : 'sr-only opacity-0',
+              )}
+            >
+              {yearNote}
+            </p>
           </FilterSection>
 
           <FilterSection title="Métadonnées">
-            <label className="flex min-h-[44px] cursor-pointer items-center justify-between gap-3 rounded-lg px-2 py-2 text-sm text-gray-900 transition-colors duration-200 hover:bg-gray-50">
+            <label className="flex min-h-[44px] cursor-pointer items-center justify-between gap-3 rounded-lg px-2 py-2 text-sm text-gray-900 transition-colors duration-200 hover:bg-gray-50 dark:text-gray-100 dark:hover:bg-navy-700/60">
               <span className="flex items-center gap-2">
                 <span className="badge-ai shrink-0">IA</span>
                 Extraction automatique

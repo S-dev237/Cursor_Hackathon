@@ -1,4 +1,9 @@
-from src.shared.infrastructure.exceptions import ConflictException, ValidationException
+from src.shared.infrastructure.exceptions import (
+    AccessDeniedException,
+    ConflictException,
+    NotFoundException,
+    UnauthorizedException,
+)
 
 
 class EmailDejaUtiliseException(ConflictException):
@@ -6,11 +11,16 @@ class EmailDejaUtiliseException(ConflictException):
         super().__init__(f"L'email '{email}' est déjà utilisé")
 
 
-class IdentifiantsInvalidesException(ValidationException):
+class UtilisateurIntrouvableException(NotFoundException):
+    def __init__(self):
+        super().__init__("Utilisateur introuvable")
+
+
+class IdentifiantsInvalidesException(UnauthorizedException):
     def __init__(self):
         super().__init__("Email ou mot de passe incorrect")
 
 
-class UtilisateurInactifException(ValidationException):
+class UtilisateurInactifException(AccessDeniedException):
     def __init__(self):
         super().__init__("Ce compte est désactivé")

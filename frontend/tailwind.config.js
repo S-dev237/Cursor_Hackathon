@@ -3,6 +3,7 @@ import forms from '@tailwindcss/forms'
 /** @type {import('tailwindcss').Config} */
 export default {
   content: ['./index.html', './src/**/*.{js,jsx}'],
+  darkMode: 'class',
   theme: {
     extend: {
       colors: {
@@ -102,10 +103,31 @@ export default {
           '50%': { transform: 'translate(0, -18px) rotate(-2deg)' },
         },
         scan: {
-          '0%': { transform: 'translateY(0)', opacity: '0' },
-          '15%': { opacity: '1' },
-          '85%': { opacity: '1' },
-          '100%': { transform: 'translateY(150px)', opacity: '0' },
+          '0%': { transform: 'translate3d(0, -4px, 0)', opacity: '0' },
+          '6%': { opacity: '1' },
+          '88%': { transform: 'translate3d(0, 168px, 0)', opacity: '1' },
+          '96%': { transform: 'translate3d(0, 168px, 0)', opacity: '0' },
+          '100%': { transform: 'translate3d(0, 168px, 0)', opacity: '0' },
+        },
+        'scan-fill': {
+          '0%': { transform: 'scaleY(0)', opacity: '0.4' },
+          '6%': { opacity: '1' },
+          '88%': { transform: 'scaleY(1)', opacity: '1' },
+          '96%': { transform: 'scaleY(1)', opacity: '0' },
+          '100%': { transform: 'scaleY(0)', opacity: '0' },
+        },
+        'scan-glow': {
+          '0%, 100%': { opacity: '0.35' },
+          '50%': { opacity: '0.85' },
+        },
+        'line-read': {
+          '0%, 100%': { opacity: '0.45', transform: 'scaleX(1)' },
+          '12%, 28%': { opacity: '1', transform: 'scaleX(1)' },
+        },
+        'chip-scan': {
+          '0%, 72%': { opacity: '0.88', transform: 'scale(1) translateY(0)' },
+          '80%, 90%': { opacity: '1', transform: 'scale(1.04) translateY(-2px)' },
+          '96%, 100%': { opacity: '0.88', transform: 'scale(1) translateY(0)' },
         },
         'pop-in': {
           '0%': { opacity: '0', transform: 'scale(0.85) translateY(6px)' },
@@ -123,6 +145,10 @@ export default {
         'dash-rotate': {
           to: { strokeDashoffset: '-20' },
         },
+        marquee: {
+          '0%': { transform: 'translate3d(0, 0, 0)' },
+          '100%': { transform: 'translate3d(-50%, 0, 0)' },
+        },
       },
       animation: {
         'fade-up': 'fade-up 0.6s cubic-bezier(0.16, 1, 0.3, 1) both',
@@ -134,11 +160,16 @@ export default {
         float: 'float 6s ease-in-out infinite',
         'float-slow': 'float 9s ease-in-out infinite',
         drift: 'drift 11s ease-in-out infinite',
-        scan: 'scan 3.2s cubic-bezier(0.45, 0, 0.55, 1) infinite',
+        scan: 'scan 2.8s cubic-bezier(0.45, 0.05, 0.55, 0.95) infinite',
+        'scan-fill': 'scan-fill 2.8s cubic-bezier(0.45, 0.05, 0.55, 0.95) infinite',
+        'scan-glow': 'scan-glow 1.4s ease-in-out infinite',
+        'line-read': 'line-read 2.8s cubic-bezier(0.45, 0.05, 0.55, 0.95) infinite',
+        'chip-scan': 'chip-scan 2.8s cubic-bezier(0.45, 0.05, 0.55, 0.95) infinite',
         'pop-in': 'pop-in 0.5s cubic-bezier(0.16, 1, 0.3, 1) both',
         twinkle: 'twinkle 2.4s ease-in-out infinite',
         'spin-slow': 'spin-slow 22s linear infinite',
         'dash-rotate': 'dash-rotate 1s linear infinite',
+        marquee: 'marquee 36s linear infinite',
       },
     },
   },

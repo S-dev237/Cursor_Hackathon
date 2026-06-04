@@ -2,7 +2,7 @@
 export default function SkeletonCard({ detailed = false }) {
   return (
     <div
-      className="rounded-xl border border-gray-200/60 bg-white p-5 shadow-card"
+      className="rounded-xl border border-gray-200/60 bg-white p-5 shadow-card dark:border-navy-700 dark:bg-navy-800"
       aria-hidden="true"
     >
       <div className="mb-3 flex items-center gap-2">
@@ -27,7 +27,7 @@ export default function SkeletonCard({ detailed = false }) {
         <div className="skeleton h-5 w-12 rounded-full" />
       </div>
 
-      <div className="flex items-center justify-between border-t border-gray-200/60 pt-3">
+      <div className="flex items-center justify-between border-t border-gray-200/60 pt-3 dark:border-navy-700">
         <div className="flex gap-3">
           <div className="skeleton h-3 w-10" />
           <div className="skeleton h-3 w-10" />

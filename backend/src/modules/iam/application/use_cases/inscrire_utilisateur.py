@@ -14,6 +14,8 @@ class InscrireUtilisateurCommand:
     type_user: TypeUtilisateur = "ETUDIANT"
     nom: str | None = None
     prenom: str | None = None
+    nom_complet: str | None = None
+    institution_id: str | None = None
 
 
 class InscrireUtilisateurUseCase:
@@ -27,7 +29,7 @@ class InscrireUtilisateurUseCase:
         self._event_bus = event_bus
         self._pwd = password_service
 
-    async def execute(self, cmd: InscrireUtilisateurCommand) -> str:
+    async def execute(self, cmd: InscrireUtilisateurCommand) -> Utilisateur:
         if await self._repo.existe_par_email(cmd.email):
             raise EmailDejaUtiliseException(cmd.email)
 
@@ -38,9 +40,11 @@ class InscrireUtilisateurUseCase:
             mot_de_passe_hash=hash_,
             nom=cmd.nom,
             prenom=cmd.prenom,
+            nom_complet=cmd.nom_complet,
+            institution_id=cmd.institution_id,
         )
 
         await self._repo.sauvegarder(utilisateur)
         await self._event_bus.publish(utilisateur.domain_events)
         utilisateur.clear_events()
-        return str(utilisateur.id)
+        return utilisateur

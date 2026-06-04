@@ -4,26 +4,36 @@ import Navbar from '../components/layout/Navbar.jsx'
 import TypeBadge from '../components/ui/TypeBadge.jsx'
 import AiBadge from '../components/ui/AiBadge.jsx'
 import Spinner from '../components/ui/Spinner.jsx'
-import { getMyDocuments } from '../api/documents.js'
-
-const STATUS = {
-  pending: { label: 'En attente', cls: 'border-amber bg-amber-light text-amber-dark' },
-  approved: { label: 'Approuvé', cls: 'border-teal-mid bg-teal-light text-teal-dark' },
-  rejected: { label: 'Rejeté', cls: 'border-[#F09595] bg-[#FCEBEB] text-[#791F1F]' },
-}
+import { useToast } from '../components/ui/Toast.jsx'
+import {
+  getMyDocuments,
+  publishDocument,
+  withdrawDocument,
+} from '../api/documents.js'
+import { STATUS } from '../constants/colors.js'
 
 function StatusBadge({ status }) {
-  const s = STATUS[status] || STATUS.pending
+  const s = STATUS[status] || STATUS.draft
   return (
-    <span className={`inline-flex items-center rounded border px-2 py-0.5 font-mono text-[10px] font-medium uppercase tracking-wider ${s.cls}`}>
+    <span
+      className={`inline-flex items-center rounded border px-2 py-0.5 font-mono text-[10px] font-medium uppercase tracking-wider ${s.cls}`}
+    >
       {s.label}
     </span>
   )
 }
 
 export default function MySubmissionsPage() {
+  const { toast } = useToast()
   const [docs, setDocs] = useState([])
   const [loading, setLoading] = useState(true)
+  const [busyId, setBusyId] = useState(null)
+
+  const load = () =>
+    getMyDocuments().then(({ data }) => {
+      setDocs(data || [])
+      setLoading(false)
+    })
 
   useEffect(() => {
     let active = true
@@ -37,8 +47,20 @@ export default function MySubmissionsPage() {
     }
   }, [])
 
+  const runAction = async (doc, action, successMsg) => {
+    setBusyId(doc.id)
+    const { error } = await action(doc.id)
+    setBusyId(null)
+    if (error) {
+      toast(error, 'error')
+      return
+    }
+    await load()
+    toast(successMsg)
+  }
+
   return (
-    <div className="flex min-h-dvh flex-col bg-gray-bg">
+    <div className="page-shell flex min-h-dvh flex-col">
       <Navbar />
       <main className="mx-auto w-full max-w-4xl flex-1 px-4 py-8 sm:px-6">
         <div className="mb-6 flex items-center justify-between">
@@ -55,8 +77,8 @@ export default function MySubmissionsPage() {
             <Spinner size={28} />
           </div>
         ) : docs.length === 0 ? (
-          <div className="rounded-lg border border-dashed border-gray-border bg-white py-16 text-center">
-            <p className="font-serif text-lg font-semibold text-gray-text">
+          <div className="rounded-lg border border-dashed border-gray-border bg-white py-16 text-center dark:border-navy-700 dark:bg-navy-800">
+            <p className="font-serif text-lg font-semibold text-gray-text dark:text-gray-100">
               Aucune soumission pour le moment
             </p>
             <p className="mx-auto mt-2 max-w-sm text-sm text-gray-muted">
@@ -68,39 +90,85 @@ export default function MySubmissionsPage() {
           </div>
         ) : (
           <ul className="space-y-3">
-            {docs.map((doc) => (
-              <li
-                key={doc.id}
-                className="flex items-center gap-4 rounded-lg border border-gray-border bg-white p-4"
-              >
-                <div className="min-w-0 flex-1">
-                  <div className="mb-1.5 flex flex-wrap items-center gap-2">
-                    <StatusBadge status={doc.status} />
-                    <TypeBadge type={doc.doc_type} />
-                    {doc.ai_extracted && <AiBadge confidence={doc.ai_confidence} />}
-                  </div>
-                  <p className="font-serif text-[15px] font-semibold text-gray-text line-clamp-2">
-                    {doc.title}
-                  </p>
-                  <p className="mt-0.5 text-xs text-gray-muted">
-                    {doc.publication_year} · {doc.domain_name || '—'}
-                  </p>
-                  {doc.status === 'rejected' && doc.rejection_reason && (
-                    <p className="mt-2 rounded bg-[#FCEBEB] px-2 py-1 text-xs text-[#791F1F]">
-                      Motif : {doc.rejection_reason}
+            {docs.map((doc) => {
+              const busy = busyId === doc.id
+              return (
+                <li
+                  key={doc.id}
+                  className="flex flex-col gap-4 rounded-lg border border-gray-border bg-white p-4 dark:border-navy-700 dark:bg-navy-800 sm:flex-row sm:items-center"
+                >
+                  <div className="min-w-0 flex-1">
+                    <div className="mb-1.5 flex flex-wrap items-center gap-2">
+                      <StatusBadge status={doc.status} />
+                      <TypeBadge type={doc.doc_type} />
+                      {doc.ai_extracted && <AiBadge confidence={doc.ai_confidence} />}
+                    </div>
+                    <p className="font-serif text-[15px] font-semibold text-gray-text line-clamp-2 dark:text-gray-100">
+                      {doc.title}
                     </p>
-                  )}
-                </div>
-                {doc.status === 'approved' && (
-                  <Link
-                    to={`/documents/${doc.id}`}
-                    className="shrink-0 text-sm font-medium text-teal hover:text-teal-dark"
-                  >
-                    Consulter →
-                  </Link>
-                )}
-              </li>
-            ))}
+                    <p className="mt-0.5 text-xs text-gray-muted">
+                      {doc.publication_year} · {doc.domain_name || '—'}
+                    </p>
+                  </div>
+
+                  <div className="flex shrink-0 flex-wrap items-center gap-2">
+                    <Link
+                      to={`/submit?id=${doc.id}`}
+                      className="btn-ghost px-3 py-2 text-xs"
+                    >
+                      Modifier
+                    </Link>
+
+                    {doc.status === 'draft' && (
+                      <button
+                        type="button"
+                        onClick={() =>
+                          runAction(doc, publishDocument, 'Document publié')
+                        }
+                        disabled={busy}
+                        className="btn-primary px-3 py-2 text-xs disabled:opacity-50"
+                      >
+                        {busy ? 'Publication…' : 'Publier'}
+                      </button>
+                    )}
+
+                    {doc.status === 'published' && (
+                      <>
+                        <Link
+                          to={`/documents/${doc.id}`}
+                          className="text-sm font-medium text-teal hover:text-teal-dark"
+                        >
+                          Consulter →
+                        </Link>
+                        <button
+                          type="button"
+                          onClick={() =>
+                            runAction(doc, withdrawDocument, 'Document retiré')
+                          }
+                          disabled={busy}
+                          className="inline-flex items-center justify-center rounded-lg border border-gray-border bg-white px-3 py-2 text-xs font-medium text-gray-text transition-colors duration-200 hover:border-red-300 hover:text-red-700 disabled:opacity-50 dark:bg-navy-800 dark:text-gray-100"
+                        >
+                          {busy ? 'Retrait…' : 'Retirer'}
+                        </button>
+                      </>
+                    )}
+
+                    {doc.status === 'withdrawn' && (
+                      <button
+                        type="button"
+                        onClick={() =>
+                          runAction(doc, publishDocument, 'Document republié')
+                        }
+                        disabled={busy}
+                        className="btn-primary px-3 py-2 text-xs disabled:opacity-50"
+                      >
+                        {busy ? 'Republication…' : 'Republier'}
+                      </button>
+                    )}
+                  </div>
+                </li>
+              )
+            })}
           </ul>
         )}
       </main>

@@ -1,11 +1,12 @@
 import { useEffect, useReducer, useRef, useState, useCallback } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useSearchParams } from 'react-router-dom'
 import { AnimatePresence, motion } from 'framer-motion'
 import clsx from 'clsx'
 import Navbar from '../components/layout/Navbar.jsx'
 import TagsInput from '../components/ui/TagsInput.jsx'
 import { useToast } from '../components/ui/Toast.jsx'
 import {
+  getDocument,
   getDomains,
   getInstitutions,
   submitDocument,
@@ -23,6 +24,7 @@ const STEPS = [
 
 const YEARS = Array.from({ length: 2026 - 2010 + 1 }, (_, i) => 2026 - i)
 const MAX_FILE_MB = 20
+const PDF_MIME = 'application/pdf'
 
 const initialState = {
   title: '',
@@ -57,13 +59,13 @@ function IaTag() {
 function Field({ label, required, ai, children, hint }) {
   return (
     <label className="mb-5 block">
-      <span className="mb-2 flex items-center text-sm font-medium text-gray-900">
+      <span className="mb-2 flex items-center text-sm font-medium text-gray-900 dark:text-gray-100">
         {label}
-        {required && <span className="ml-0.5 text-red-700">*</span>}
+        {required && <span className="ml-0.5 text-red-700 dark:text-red-400">*</span>}
         {ai && <IaTag />}
       </span>
       {children}
-      {hint && <span className="mt-1.5 block text-xs text-gray-500">{hint}</span>}
+      {hint && <span className="mt-1.5 block text-xs text-gray-500 dark:text-gray-400">{hint}</span>}
     </label>
   )
 }
@@ -83,7 +85,7 @@ function Stepper({ current, savedAt }) {
               {/* Connecteur vertical animé */}
               {!isLast && (
                 <div
-                  className="absolute left-[15px] top-8 h-[calc(100%-12px)] w-0.5 overflow-hidden bg-gray-200"
+                  className="absolute left-[15px] top-8 h-[calc(100%-12px)] w-0.5 overflow-hidden bg-gray-200 dark:bg-navy-700"
                   aria-hidden="true"
                 >
                   <motion.div
@@ -104,8 +106,8 @@ function Stepper({ current, savedAt }) {
                   className={clsx(
                     'relative flex h-8 w-8 items-center justify-center rounded-full text-xs font-semibold transition-all duration-200',
                     done && 'bg-teal-500 text-white shadow-teal',
-                    active && 'border-2 border-teal-500 bg-white text-teal-600',
-                    !done && !active && 'border border-gray-200 bg-white text-gray-400',
+                    active && 'border-2 border-teal-500 bg-white text-teal-600 dark:bg-navy-800 dark:text-teal-400',
+                    !done && !active && 'border border-gray-200 bg-white text-gray-400 dark:border-navy-700 dark:bg-navy-800 dark:text-gray-500',
                   )}
                 >
                   {done ? (
@@ -128,13 +130,17 @@ function Stepper({ current, savedAt }) {
               <div
                 className={clsx(
                   'min-w-0 flex-1 rounded-xl px-3 py-2 transition-all duration-200',
-                  active && 'bg-white shadow-card',
+                  active && 'bg-white shadow-card dark:bg-navy-800',
                 )}
               >
                 <span
                   className={clsx(
                     'block text-sm leading-snug',
-                    active ? 'font-medium text-gray-900' : done ? 'text-gray-700' : 'text-gray-400',
+                    active
+                      ? 'font-medium text-gray-900 dark:text-gray-100'
+                      : done
+                        ? 'text-gray-700 dark:text-gray-300'
+                        : 'text-gray-400 dark:text-gray-500',
                   )}
                 >
                   {label}
@@ -149,10 +155,10 @@ function Stepper({ current, savedAt }) {
         <motion.div
           initial={{ opacity: 0, y: 8 }}
           animate={{ opacity: 1, y: 0 }}
-          className="mt-6 rounded-xl border border-teal-200/60 bg-teal-50/50 px-4 py-3 text-xs text-teal-800"
+          className="mt-6 rounded-xl border border-teal-200/60 bg-teal-50/50 px-4 py-3 text-xs text-teal-800 dark:border-teal-500/30 dark:bg-teal-500/10 dark:text-teal-300"
         >
           <span className="font-medium">Brouillon sauvegardé</span>
-          <span className="mt-0.5 block font-mono text-[10px] text-teal-600">{savedAt}</span>
+          <span className="mt-0.5 block font-mono text-[10px] text-teal-600 dark:text-teal-400">{savedAt}</span>
         </motion.div>
       )}
     </aside>
@@ -177,11 +183,15 @@ const aiFieldVariants = {
 export default function SubmitPage() {
   const navigate = useNavigate()
   const { toast } = useToast()
+  const [searchParams] = useSearchParams()
+  const editId = searchParams.get('id')
+  const isEditing = !!editId
 
   const [form, dispatch] = useReducer(reducer, initialState)
   const [step, setStep] = useState(1)
   const [file, setFile] = useState(null)
   const [fileError, setFileError] = useState(null)
+  const [existingFileName, setExistingFileName] = useState(null)
   const [aiFields, setAiFields] = useState(new Set())
   const [extracting, setExtracting] = useState(false)
   const [extractStatus, setExtractStatus] = useState(null)
@@ -197,6 +207,32 @@ export default function SubmitPage() {
   useEffect(() => {
     getDomains().then(({ data }) => data && setDomains(data))
     getInstitutions().then(({ data }) => data && setInstitutions(data))
+
+    // Mode édition : on charge le document existant et on ignore le brouillon local
+    if (editId) {
+      getDocument(editId).then(({ data }) => {
+        if (!data) return
+        tempDocId.current = data.id
+        setExistingFileName(`${data.title || 'document'}.pdf`)
+        dispatch({
+          type: 'HYDRATE',
+          payload: {
+            title: data.title || '',
+            doc_type: data.doc_type || 'thesis',
+            publication_year: data.publication_year || new Date().getFullYear(),
+            institution_id: data.institution_id ? String(data.institution_id) : '',
+            domain_id: data.domain_id ? String(data.domain_id) : '',
+            authors: data.authors || [],
+            keywords: data.keywords || [],
+            abstract: data.abstract || '',
+            ai_extracted: data.ai_extracted || false,
+            ai_confidence: data.ai_confidence || 0,
+          },
+        })
+      })
+      return
+    }
+
     const raw = localStorage.getItem(STORAGE_KEYS.draft)
     if (raw) {
       try {
@@ -205,12 +241,13 @@ export default function SubmitPage() {
         /* ignore */
       }
     }
-  }, [])
+  }, [editId])
 
   const saveDraft = useCallback(() => {
+    if (isEditing) return
     localStorage.setItem(STORAGE_KEYS.draft, JSON.stringify(form))
     setSavedAt(new Date().toLocaleTimeString('fr-FR'))
-  }, [form])
+  }, [form, isEditing])
 
   useEffect(() => {
     const interval = setInterval(saveDraft, 30000)
@@ -238,19 +275,29 @@ export default function SubmitPage() {
         form.institution_id
       )
     if (step === 2) return form.authors.length >= 1 && form.domain_id
-    if (step === 3) return !!file
+    if (step === 3) return isEditing ? true : !!file
     return true
   }
 
   const handleFile = (selected) => {
     setFileError(null)
     if (!selected) return
-    if (!selected.name.toLowerCase().endsWith('.pdf')) {
-      setFileError('Seuls les fichiers PDF sont acceptés.')
+    const hasPdfExt = selected.name.toLowerCase().endsWith('.pdf')
+    const hasPdfMime = selected.type === PDF_MIME || selected.type === ''
+    if (!hasPdfExt) {
+      setFileError('Extension invalide : seuls les fichiers .pdf sont acceptés.')
+      return
+    }
+    if (!hasPdfMime) {
+      setFileError(
+        'Type de fichier invalide : le document doit être un PDF (application/pdf).',
+      )
       return
     }
     if (selected.size > MAX_FILE_MB * 1024 * 1024) {
-      setFileError(`Le fichier dépasse ${MAX_FILE_MB} Mo.`)
+      setFileError(
+        `Fichier trop volumineux (${(selected.size / 1024 / 1024).toFixed(1)} Mo) : ${MAX_FILE_MB} Mo maximum.`,
+      )
       return
     }
     setFile(selected)
@@ -298,7 +345,7 @@ export default function SubmitPage() {
   }
 
   const aiClass = (key) =>
-    aiFields.has(key) ? 'input-ai border-teal-300 bg-teal-50/30 glow-ai' : 'input-base'
+    aiFields.has(key) ? 'input-ai glow-ai' : 'input-base'
 
   const handleSubmit = async () => {
     setSubmitting(true)
@@ -324,15 +371,19 @@ export default function SubmitPage() {
       toast(error, 'error')
       return
     }
-    localStorage.removeItem(STORAGE_KEYS.draft)
-    toast('Soumission envoyée — en attente de validation')
+    if (!isEditing) localStorage.removeItem(STORAGE_KEYS.draft)
+    toast(
+      isEditing
+        ? 'Modifications enregistrées'
+        : 'Brouillon créé — publiez-le depuis « Mes soumissions »',
+    )
     navigate('/my-submissions')
   }
 
   const progress = (step / STEPS.length) * 100
 
   return (
-    <div className="flex min-h-dvh flex-col bg-gray-100">
+    <div className="page-shell flex min-h-dvh flex-col">
       <Navbar />
       <main className="mx-auto flex w-full max-w-5xl flex-1 flex-col gap-8 px-4 py-8 sm:px-6 lg:flex-row lg:gap-10">
         <Stepper current={step} savedAt={savedAt} />
@@ -341,14 +392,14 @@ export default function SubmitPage() {
           {/* Barre de progression */}
           <div className="mb-6">
             <div className="mb-2.5 flex items-center justify-between">
-              <span className="font-serif text-lg font-semibold text-gray-900">
+              <span className="font-serif text-lg font-semibold text-gray-900 dark:text-gray-100">
                 {STEPS[step - 1]}
               </span>
               <span className="font-mono text-[11px] uppercase tracking-wider text-gray-400">
                 Étape {step} / {STEPS.length}
               </span>
             </div>
-            <div className="h-1.5 w-full overflow-hidden rounded-full bg-gray-200">
+            <div className="h-1.5 w-full overflow-hidden rounded-full bg-gray-200 dark:bg-navy-700">
               <motion.div
                 className="h-full rounded-full bg-teal-500"
                 animate={{ width: `${progress}%` }}
@@ -357,19 +408,21 @@ export default function SubmitPage() {
             </div>
           </div>
 
-          <div className="rounded-xl border border-gray-200/60 bg-white p-6 shadow-card sm:p-8">
+          <div className="rounded-xl border border-gray-200/60 bg-white p-6 shadow-card sm:p-8 dark:border-navy-700 dark:bg-navy-800">
             <section
-              className="mb-8 border-b border-gray-200/80 pb-8"
+              className="mb-8 border-b border-gray-200/80 pb-8 dark:border-navy-700/60"
               aria-labelledby="upload-heading"
             >
               <h2
                 id="upload-heading"
-                className="mb-1 font-serif text-base font-semibold text-gray-900"
+                className="mb-1 font-serif text-base font-semibold text-gray-900 dark:text-gray-100"
               >
                 Document PDF
               </h2>
-              <p className="mb-4 text-sm text-gray-500">
-                Glissez-déposez votre fichier ou parcourez votre ordinateur. PDF uniquement, {MAX_FILE_MB} Mo max.
+              <p className="mb-4 text-sm text-gray-500 dark:text-gray-400">
+                {isEditing && existingFileName && !file
+                  ? `Fichier actuel conservé : ${existingFileName}. Déposez un nouveau PDF pour le remplacer (optionnel).`
+                  : `Glissez-déposez votre fichier ou parcourez votre ordinateur. PDF uniquement, ${MAX_FILE_MB} Mo max.`}
               </p>
               <FileDropzone
                 file={file}
@@ -485,8 +538,8 @@ export default function SubmitPage() {
 
                 {step === 3 && (
                   <>
-                    {!file && (
-                      <p className="mb-5 rounded-xl border border-amber/30 bg-amber-light px-4 py-3 text-sm text-amber-dark">
+                    {!file && !isEditing && (
+                      <p className="mb-5 rounded-xl border border-amber/30 bg-amber-light px-4 py-3 text-sm text-amber-dark dark:border-amber/40 dark:bg-amber/15 dark:text-amber-light">
                         Ajoutez un PDF dans la zone de dépôt ci-dessus pour continuer.
                       </p>
                     )}
@@ -516,7 +569,7 @@ export default function SubmitPage() {
                       <motion.div
                         initial={{ opacity: 0, y: 8 }}
                         animate={{ opacity: 1, y: 0 }}
-                        className="mt-4 flex items-center gap-2 rounded-xl border border-teal-300/50 bg-teal-50 px-4 py-3 text-sm text-teal-800 glow-ai"
+                        className="mt-4 flex items-center gap-2 rounded-xl border border-teal-300/50 bg-teal-50 px-4 py-3 text-sm text-teal-800 glow-ai dark:border-teal-500/40 dark:bg-teal-500/10 dark:text-teal-300"
                       >
                         <svg viewBox="0 0 16 16" className="h-4 w-4 shrink-0" fill="none">
                           <path d="M3.5 8.5l3 3 6-7" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
@@ -526,12 +579,12 @@ export default function SubmitPage() {
                       </motion.div>
                     )}
                     {extractStatus === 'partial' && (
-                      <div className="mt-4 rounded-xl border border-amber/30 bg-amber-light px-4 py-3 text-sm text-amber-dark">
+                      <div className="mt-4 rounded-xl border border-amber/30 bg-amber-light px-4 py-3 text-sm text-amber-dark dark:border-amber/40 dark:bg-amber/15 dark:text-amber-light">
                         Extraction partielle — remplissez les champs manuellement.
                       </div>
                     )}
 
-                    <div className="mt-8 border-t border-gray-200/80 pt-8">
+                    <div className="mt-8 border-t border-gray-200/80 pt-8 dark:border-navy-700/60">
                       {extractStatus === 'success' ? (
                         <motion.div
                           initial="hidden"
@@ -612,7 +665,7 @@ export default function SubmitPage() {
               </motion.div>
             </AnimatePresence>
 
-            <div className="mt-8 flex items-center justify-between border-t border-gray-200/80 pt-6">
+            <div className="mt-8 flex items-center justify-between border-t border-gray-200/80 pt-6 dark:border-navy-700/60">
               <button
                 type="button"
                 onClick={() => setStep((s) => Math.max(1, s - 1))}
@@ -641,8 +694,10 @@ export default function SubmitPage() {
                   {submitting ? (
                     <span className="inline-flex items-center gap-2">
                       <span className="h-4 w-4 animate-spin rounded-full border-2 border-white/30 border-t-white" />
-                      Envoi…
+                      {isEditing ? 'Enregistrement…' : 'Envoi…'}
                     </span>
+                  ) : isEditing ? (
+                    'Enregistrer'
                   ) : (
                     'Soumettre'
                   )}
@@ -693,19 +748,19 @@ function FileDropzone({ file, error, onFile, onRemove }) {
       <motion.div
         initial={{ opacity: 0, scale: 0.98 }}
         animate={{ opacity: 1, scale: 1 }}
-        className="flex items-center gap-4 rounded-xl border border-teal-300/50 bg-teal-50/50 p-4 glow-ai"
+        className="flex items-center gap-4 rounded-xl border border-teal-300/50 bg-teal-50/50 p-4 glow-ai dark:border-teal-500/40 dark:bg-teal-500/10"
       >
-        <span className="flex h-11 w-11 items-center justify-center rounded-lg bg-white text-teal-600 shadow-sm">
+        <span className="flex h-11 w-11 items-center justify-center rounded-lg bg-white text-teal-600 shadow-sm dark:bg-navy-900 dark:text-teal-400">
           <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none">
             <path d="M7 3h7l5 5v13H7z" stroke="currentColor" strokeWidth="1.4" strokeLinejoin="round" />
             <path d="M14 3v5h5" stroke="currentColor" strokeWidth="1.4" strokeLinejoin="round" />
           </svg>
         </span>
         <div className="min-w-0 flex-1">
-          <p className="truncate text-sm font-medium text-gray-900">{file.name}</p>
-          <p className="mt-0.5 font-mono text-[11px] text-gray-500">
+          <p className="truncate text-sm font-medium text-gray-900 dark:text-gray-100">{file.name}</p>
+          <p className="mt-0.5 font-mono text-[11px] text-gray-500 dark:text-gray-400">
             {sizeMo} Mo
-            <span className="ml-2 rounded-full bg-teal-100 px-2 py-0.5 text-teal-700">
+            <span className="ml-2 rounded-full bg-teal-100 px-2 py-0.5 text-teal-700 dark:bg-teal-500/20 dark:text-teal-300">
               PDF
             </span>
           </p>
@@ -721,7 +776,7 @@ function FileDropzone({ file, error, onFile, onRemove }) {
           <button
             type="button"
             onClick={onRemove}
-            className="rounded-lg px-2 py-1 text-sm text-red-700 transition-colors duration-200 hover:bg-red-50"
+            className="rounded-lg px-2 py-1 text-sm text-red-700 transition-colors duration-200 hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-500/10"
           >
             Retirer
           </button>
@@ -767,10 +822,10 @@ function FileDropzone({ file, error, onFile, onRemove }) {
           <path d="M12 16V4m0 0L8 8m4-4l4 4" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
           <path d="M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
         </motion.svg>
-        <p className="text-sm font-medium text-gray-900">
+        <p className="text-sm font-medium text-gray-900 dark:text-gray-100">
           Glissez-déposez votre PDF ici
         </p>
-        <p className="mt-1.5 text-xs text-gray-500">
+        <p className="mt-1.5 text-xs text-gray-500 dark:text-gray-400">
           PDF uniquement · {MAX_FILE_MB} Mo maximum
         </p>
         <button
@@ -786,6 +841,8 @@ function FileDropzone({ file, error, onFile, onRemove }) {
           type="file"
           accept="application/pdf,.pdf"
           className="sr-only"
+          aria-invalid={!!error || undefined}
+          aria-describedby={error ? 'submit-pdf-error' : undefined}
           onChange={(e) => {
             onFile(e.target.files?.[0])
             e.target.value = ''
@@ -793,7 +850,7 @@ function FileDropzone({ file, error, onFile, onRemove }) {
         />
       </div>
       {error && (
-        <p role="alert" className="mt-2 text-sm text-red-700">
+        <p id="submit-pdf-error" role="alert" className="mt-2 text-sm text-red-700 dark:text-red-400">
           {error}
         </p>
       )}
@@ -803,14 +860,14 @@ function FileDropzone({ file, error, onFile, onRemove }) {
 
 function Row({ label, value }) {
   return (
-    <div className="flex justify-between gap-4 border-b border-gray-100 py-3 text-sm last:border-0">
-      <span className="shrink-0 text-gray-500">{label}</span>
-      <span className="text-right font-medium text-gray-900">{value || '—'}</span>
+    <div className="flex justify-between gap-4 border-b border-gray-100 py-3 text-sm last:border-0 dark:border-navy-700/60">
+      <span className="shrink-0 text-gray-500 dark:text-gray-400">{label}</span>
+      <span className="text-right font-medium text-gray-900 dark:text-gray-100">{value || '—'}</span>
     </div>
   )
 }
 
-function Recap({ form, file, domains, institutions }) {
+function Recap({ form, file, domains, institutions, isEditing, existingFileName }) {
   const domainName = domains.find((d) => String(d.id) === form.domain_id)?.name
   const instName = institutions.find(
     (i) => String(i.id) === form.institution_id,
@@ -818,13 +875,15 @@ function Recap({ form, file, domains, institutions }) {
 
   return (
     <div>
-      <h3 className="mb-1 font-serif text-xl font-semibold text-gray-900">
-        Vérifiez votre soumission
+      <h3 className="mb-1 font-serif text-xl font-semibold text-gray-900 dark:text-gray-100">
+        {isEditing ? 'Vérifiez vos modifications' : 'Vérifiez votre soumission'}
       </h3>
-      <p className="mb-6 text-sm text-gray-500">
-        Une fois soumis, votre travail sera examiné par un administrateur.
+      <p className="mb-6 text-sm text-gray-500 dark:text-gray-400">
+        {isEditing
+          ? 'Vos modifications seront enregistrées. Le statut du document reste inchangé.'
+          : 'Votre travail sera enregistré comme brouillon. Vous pourrez le publier vous-même depuis « Mes soumissions ».'}
       </p>
-      <div className="overflow-hidden rounded-xl border border-gray-200/60 bg-gray-50/50">
+      <div className="overflow-hidden rounded-xl border border-gray-200/60 bg-gray-50/50 dark:border-navy-700 dark:bg-navy-900/40">
         <div className="px-5">
           <Row label="Titre" value={form.title} />
           <Row label="Type" value={DOC_TYPE_LABELS[form.doc_type]} />
@@ -833,7 +892,7 @@ function Recap({ form, file, domains, institutions }) {
           <Row label="Domaine" value={domainName} />
           <Row label="Auteurs" value={form.authors.join(', ')} />
           <Row label="Mots-clés" value={form.keywords.join(', ')} />
-          <Row label="Fichier" value={file?.name} />
+          <Row label="Fichier" value={file?.name || existingFileName} />
           {form.ai_extracted && (
             <Row
               label="Extraction IA"
@@ -845,7 +904,7 @@ function Recap({ form, file, domains, institutions }) {
       {form.abstract && (
         <div className="mt-5">
           <p className="section-label mb-2">Résumé</p>
-          <p className="rounded-lg border border-gray-200 bg-white p-4 text-sm leading-relaxed text-gray-700">
+          <p className="rounded-lg border border-gray-200 bg-white p-4 text-sm leading-relaxed text-gray-700 dark:border-navy-700 dark:bg-navy-900 dark:text-gray-300">
             {form.abstract}
           </p>
         </div>
